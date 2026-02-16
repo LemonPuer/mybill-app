@@ -125,8 +125,6 @@ const fetchBills = async (reset = false) => {
     }
 
     hasMore.value = newList.length >= pageSize.value
-  } catch (error) {
-    ElMessage.error('获取账单列表失败')
   } finally {
     loading.value = false
   }

@@ -155,8 +155,8 @@ export const getAccountTree = () => {
  * @param data
  * @returns
  */
-export const parseBillText = (data: { text: string }) => {
-  return api.post('/app/parseBillText', {
+export const parseBillText = (data: { message: string }) => {
+  return api.post('/app/analysis', {
     data,
   })
 }

@@ -138,3 +138,76 @@ a,
 .dark .el-skeleton__circle {
   background: var(--color-bg-input);
 }
+
+/* 全局弹窗样式 */
+.el-dialog {
+  border-radius: var(--radius-modal) !important;
+}
+
+.el-dialog__header {
+  padding: 20px 24px !important;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.el-dialog__title {
+  font-size: 16px !important;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.el-dialog__body {
+  padding: 24px !important;
+}
+
+.el-form-item {
+  margin-bottom: 20px;
+}
+
+.el-form-item__label {
+  font-size: 14px !important;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.el-input__wrapper {
+  border-radius: var(--radius-input);
+  padding: 8px 12px;
+}
+
+.el-input-number {
+  width: 100%;
+}
+
+.el-select {
+  width: 100%;
+}
+
+.el-radio-group {
+  display: flex;
+  gap: 12px;
+}
+
+.el-radio-button {
+  flex: 1;
+}
+
+.el-radio-button__inner {
+  width: 100%;
+  border-radius: var(--radius-input) !important;
+}
+
+.el-date-editor {
+  width: 100%;
+}
+
+.el-dialog__footer {
+  padding: 16px 24px !important;
+  border-top: 1px solid var(--color-border);
+}
+
+.el-dialog__footer .el-button {
+  border-radius: var(--radius-button);
+  padding: 10px 24px;
+}

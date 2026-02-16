@@ -9,6 +9,7 @@
       </router-view>
     </main>
     <BottomNav />
+    <AddBillView />
   </div>
 </template>
 
@@ -19,6 +20,7 @@ import * as billApi from '@/services/bill'
 import { getUserInfo } from '@/services/user'
 import { useDictionaryStore } from '@/stores/useCommonStore'
 import { useUserInfoStore } from '@/stores/useUserInfoStore'
+import AddBillView from '@/views/AddBillView.vue'
 import BottomNav from '@/components/BottomNav.vue'
 import HeaderView from '@/views/HeaderView.vue'
 import { ElMessage } from 'element-plus'

@@ -661,15 +661,15 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     // 调用智能解析接口
-    const res = await billApi.parseBillText({ text: inputText.value })
+    const res = await billApi.parseBillText(inputText)
     const parsed = res.data.data
 
     // 填充表单
-    billForm.type = parsed.type || 2
-    billForm.amount = parsed.amount || 0
-    billForm.categoryId = parsed.categoryId || 0
-    billForm.transactionDate = parsed.date || new Date().getTime().toString()
-    billForm.note = parsed.note || ''
+    billForm.type = parsed.type
+    billForm.amount = parsed.amount
+    billForm.categoryId = parsed.categoryId
+    billForm.transactionDate = parsed.date
+    billForm.note = parsed.note
 
     showConfirm.value = true
   } catch (error) {
@@ -743,8 +743,8 @@ onMounted(async () => {
 在 `src/services/bill.ts` 添加:
 
 ```typescript
-export const parseBillText = (data: { text: string }) => {
-  return api.post('/app/parseBillText', { data })
+export const parseBillText = (data: { message: string }) => {
+  return api.post('/app/analysis', { data })
 }
 ```
 
