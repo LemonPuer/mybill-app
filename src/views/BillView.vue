@@ -2,14 +2,33 @@
   <div class="bills-view">
     <!-- 顶部筛选栏 -->
     <div class="filter-bar">
-      <div
-        v-for="item in filterItems"
-        :key="item.value"
-        class="filter-item"
-        :class="{ active: currentFilter === item.value }"
-        @click="handleFilter(item.value)"
-      >
-        {{ item.label }}
+      <div class="filter-row">
+        <span class="filter-label">类型:</span>
+        <div class="filter-options">
+          <div
+            v-for="item in typeFilters"
+            :key="item.value"
+            class="filter-item"
+            :class="{ active: currentTypeFilter === item.value }"
+            @click="handleTypeFilter(item.value)"
+          >
+            {{ item.label }}
+          </div>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">时间:</span>
+        <div class="filter-options">
+          <div
+            v-for="item in timeFilters"
+            :key="item.value"
+            class="filter-item"
+            :class="{ active: currentTimeFilter === item.value }"
+            @click="handleTimeFilter(item.value)"
+          >
+            {{ item.label }}
+          </div>
+        </div>
       </div>
     </div>
 
@@ -30,10 +49,15 @@
         <div class="bill-group-header">{{ group.date }}</div>
         <div class="bill-group-list">
           <div v-for="item in group.items" :key="item.id" class="bill-item-with-actions">
-            <div class="bill-icon">{{ item.icon || '💰' }}</div>
+            <div class="bill-icon" :class="{ income: item.type === 1 }">
+              <el-icon>
+                <component :is="item.icon || 'Wallet'" />
+              </el-icon>
+            </div>
             <div class="bill-info">
-              <div class="bill-note">{{ item.note }}</div>
-              <div class="bill-date">{{ item.category }}</div>
+              <div class="bill-note">{{ item.category || '未分类' }}</div>
+              <div class="bill-note" v-if="item.note">{{ item.note }}</div>
+              <div class="bill-date">{{ item.transactionDate }}</div>
             </div>
             <div class="bill-amount" :class="item.type === 1 ? 'income' : 'expense'">
               {{ item.type === 1 ? '+' : '-' }}{{ item.amount }}
@@ -51,10 +75,14 @@
       </div>
     </div>
 
-    <!-- 加载更多 -->
-    <div v-if="hasMore" class="load-more">
-      <el-button :loading="loadingMore" @click="loadMore">加载更多</el-button>
-    </div>
+    <!-- 编辑账单弹窗 -->
+    <AddBillView
+      ref="addBillRef"
+      title="编辑账单"
+      :show-type="true"
+      :show-category="true"
+      @success="refreshBills"
+    />
   </div>
 </template>
 
@@ -63,28 +91,69 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { FolderOpened, Edit, Delete } from '@element-plus/icons-vue'
 import * as billApi from '@/services/bill'
+import {
+  getMonthRangeTimestamps,
+  getDayRangeTimestamps,
+  formatFriendlyTime,
+} from '@/utils/commonUtil'
+import AddBillView from '@/views/AddBillView.vue'
 
 const loading = ref(false)
 const loadingMore = ref(false)
 const billList = ref<any[]>([])
-const currentFilter = ref('all')
+const currentTypeFilter = ref('all')
+const currentTimeFilter = ref('all')
 const pageNum = ref(1)
 const pageSize = ref(20)
 const hasMore = ref(true)
+const addBillRef = ref<InstanceType<typeof AddBillView>>()
 
-const filterItems = [
+const typeFilters = [
   { label: '全部', value: 'all' },
-  { label: '今天', value: 'today' },
-  { label: '本月', value: 'month' },
-  { label: '上月', value: 'lastMonth' },
   { label: '支出', value: 'expense' },
   { label: '收入', value: 'income' },
 ]
 
+const timeFilters = [
+  { label: '全部', value: 'all' },
+  { label: '今天', value: 'today' },
+  { label: '本月', value: 'month' },
+  { label: '上月', value: 'lastMonth' },
+]
+
+const getDateParams = () => {
+  const { monthStart, monthEnd } = getMonthRangeTimestamps() as {
+    monthStart: string
+    monthEnd: string
+  }
+
+  if (currentTimeFilter.value === 'today') {
+    const { dayStart, dayEnd } = getDayRangeTimestamps() as {
+      dayStart: string
+      dayEnd: string
+    }
+    return { startTime: dayStart, endTime: dayEnd }
+  } else if (currentTimeFilter.value === 'month') {
+    return { startTime: monthStart, endTime: monthEnd }
+  } else if (currentTimeFilter.value === 'lastMonth') {
+    const now = new Date()
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const lastMonthStart = String(lastMonth.getTime())
+    const lastMonthEnd = String(new Date(now.getFullYear(), now.getMonth(), 0).getTime())
+    return { startTime: lastMonthStart, endTime: lastMonthEnd }
+  }
+  return {}
+}
+
 const groupedBills = computed(() => {
   const groups: Record<string, any[]> = {}
   billList.value.forEach((item) => {
-    const date = item.transactionDate?.split(' ')[0] || '未知日期'
+    let dateStr = item.transactionDate
+    // 如果是时间戳格式，转换为日期字符串
+    if (dateStr && /^\d+$/.test(String(dateStr))) {
+      dateStr = new Date(Number(dateStr)).toLocaleString('zh-CN')
+    }
+    const date = dateStr?.split(' ')[0] || '未知日期'
     if (!groups[date]) {
       groups[date] = []
     }
@@ -109,14 +178,22 @@ const fetchBills = async (reset = false) => {
       pageSize: pageSize.value,
     }
 
-    if (currentFilter.value === 'expense') {
+    if (currentTypeFilter.value === 'expense') {
       params.type = 2
-    } else if (currentFilter.value === 'income') {
+    } else if (currentTypeFilter.value === 'income') {
       params.type = 1
     }
 
+    const dateParams = getDateParams()
+    Object.assign(params, dateParams)
+
     const res = await billApi.getFinanceTransactionsList(params)
     const newList = res.data.data.result || []
+
+    // 格式化时间戳
+    newList.forEach((item: any) => {
+      item.transactionDate = formatFriendlyTime(item.transactionDate)
+    })
 
     if (reset) {
       billList.value = newList
@@ -130,8 +207,13 @@ const fetchBills = async (reset = false) => {
   }
 }
 
-const handleFilter = (value: string) => {
-  currentFilter.value = value
+const handleTypeFilter = (value: string) => {
+  currentTypeFilter.value = value
+  fetchBills(true)
+}
+
+const handleTimeFilter = (value: string) => {
+  currentTimeFilter.value = value
   fetchBills(true)
 }
 
@@ -146,7 +228,14 @@ const loadMore = async () => {
 }
 
 const handleEdit = (item: any) => {
-  ElMessage.info('编辑功能开发中')
+  addBillRef.value?.open({
+    id: item.id,
+    type: item.type,
+    amount: item.amount,
+    categoryId: item.categoryId,
+    transactionDate: item.transactionDate,
+    note: item.note,
+  })
 }
 
 const handleDelete = async (item: any) => {
@@ -156,10 +245,16 @@ const handleDelete = async (item: any) => {
       cancelButtonText: '取消',
       type: 'warning',
     })
+    await billApi.deleteFinanceTransactions(item.id)
     ElMessage.success('删除成功')
+    fetchBills(true)
   } catch {
-    // 用户取消
+    // 用户取消或删除失败
   }
+}
+
+const refreshBills = () => {
+  fetchBills(true)
 }
 
 onMounted(() => {
@@ -178,19 +273,39 @@ onMounted(() => {
   border-radius: var(--radius-card);
   padding: 12px 16px;
   margin-bottom: 16px;
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
   box-shadow: var(--shadow-card);
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.filter-row:last-child {
+  margin-bottom: 0;
+}
+
+.filter-label {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin-right: 12px;
+  white-space: nowrap;
+}
+
+.filter-options {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
 }
 
 .filter-item {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 6px 12px;
   background: var(--color-bg-input);
-  border-radius: 20px;
+  border-radius: 16px;
   font-size: 13px;
   color: var(--color-text-secondary);
   white-space: nowrap;
@@ -230,8 +345,13 @@ onMounted(() => {
 .bill-item-with-actions {
   display: flex;
   align-items: center;
-  padding: 14px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.2s ease;
+}
+
+.bill-item-with-actions:hover {
+  background-color: var(--color-bg-input);
 }
 
 .bill-item-with-actions:last-child {
@@ -241,34 +361,48 @@ onMounted(() => {
 .bill-icon {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  background: var(--color-bg-input);
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 12px;
   font-size: 18px;
+  flex-shrink: 0;
+}
+
+.bill-icon.income {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
 }
 
 .bill-info {
   flex: 1;
+  min-width: 0;
 }
 
 .bill-note {
   font-size: 14px;
+  font-weight: 500;
   color: var(--color-text-primary);
-  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bill-date {
-  font-size: 12px;
-  color: var(--color-text-secondary);
+  font-size: 11px;
+  color: var(--color-text-disabled);
+  margin-top: 2px;
 }
 
 .bill-amount {
-  font-size: 15px;
-  font-weight: 600;
-  margin-right: 12px;
+  font-size: 17px;
+  font-weight: 700;
+  margin-right: 16px;
+  min-width: 70px;
+  text-align: right;
 }
 
 .bill-amount.income {
@@ -282,6 +416,7 @@ onMounted(() => {
 .bill-actions {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .action-btn {
@@ -305,12 +440,6 @@ onMounted(() => {
 
 .action-btn.delete:hover {
   background: var(--color-danger);
-}
-
-/* 加载更多 */
-.load-more {
-  text-align: center;
-  padding: 20px;
 }
 
 /* 空状态 */

@@ -1,4 +1,12 @@
-import { endOfMonth, format, isToday, isTomorrow, startOfMonth } from 'date-fns'
+import {
+  endOfMonth,
+  format,
+  isToday,
+  isTomorrow,
+  startOfMonth,
+  startOfDay,
+  endOfDay,
+} from 'date-fns'
 
 /**
  * 获取月初、月末时间戳
@@ -14,6 +22,23 @@ export const getMonthRangeTimestamps = (
   return {
     monthStart,
     monthEnd,
+  }
+}
+
+/**
+ * 获取今日开始、结束时间戳
+ * @param date
+ * @returns
+ */
+export const getDayRangeTimestamps = (
+  date: Date = new Date(),
+): { dayStart: string; dayEnd: string } => {
+  const dayStart = startOfDay(date).getTime().toString()
+  const dayEnd = endOfDay(date).getTime().toString()
+
+  return {
+    dayStart,
+    dayEnd,
   }
 }
 

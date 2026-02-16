@@ -55,7 +55,7 @@
         >
           <template #header>
             <strong class="card-header-title">近期账单</strong>
-            <el-link class="card-header-link" @click.prevent="skipBill('/bill')" underline="never"
+            <el-link class="card-header-link" @click.prevent="skipBill('/bills')" underline="never"
               >查看全部</el-link
             >
           </template>
@@ -64,24 +64,38 @@
               <strong>当月暂无账单</strong>
             </div>
           </div>
-          <ol v-else>
-            <li v-for="item in recentlyBillList" :key="item.id">
-              <div class="recently-bill-item">
-                <div class="recently-bill-item-title">
+          <div class="recently-bill-list" v-else>
+            <div v-for="item in recentlyBillList" :key="item.id" class="recently-bill-item">
+              <div class="recently-bill-item-left">
+                <div class="bill-icon" :class="{ 'is-income': item.type === 1 }">
                   <el-icon>
-                    <Wallet />
+                    <component :is="item.icon || 'Wallet'" />
                   </el-icon>
-                  <div>
-                    <strong>{{ item.note }}</strong>
-                    <span>{{ item.transactionDate }}</span>
-                  </div>
                 </div>
-                <div class="recently-bill-item-content">
-                  <span>{{ item.amount }}</span>
+                <div class="bill-info">
+                  <div class="bill-category">{{ item.category || '未分类' }}</div>
+                  <div class="bill-note" v-if="item.note">{{ item.note }}</div>
+                  <div class="bill-date">{{ item.transactionDate }}</div>
                 </div>
               </div>
-            </li>
-          </ol>
+              <div class="recently-bill-item-right">
+                <span class="bill-amount" :class="{ 'is-income': item.type === 1 }">
+                  {{ item.type === 1 ? '+' : '-' }}{{ item.amount }}
+                </span>
+                <div class="bill-actions">
+                  <el-button :icon="Edit" circle size="small" text @click="handleEdit(item)" />
+                  <el-button
+                    :icon="Delete"
+                    circle
+                    size="small"
+                    text
+                    type="danger"
+                    @click="handleDelete(item)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </el-card>
 
         <!-- 消费分类占比 -->
@@ -91,7 +105,7 @@
         >
           <template #header>
             <strong class="card-header-title">消费分类占比</strong>
-            <el-link class="card-header-link" @click.prevent="skipBill('/bill')" underline="never"
+            <el-link class="card-header-link" @click.prevent="skipBill('/bills')" underline="never"
               >查看详情</el-link
             >
           </template>
@@ -251,6 +265,15 @@
         </div>
       </el-form>
     </el-dialog>
+
+    <!-- 账单编辑弹窗 -->
+    <AddBillView
+      ref="addBillRef"
+      title="编辑账单"
+      :show-type="true"
+      :show-category="true"
+      @success="refreshRecentlyBill"
+    />
   </div>
 </template>
 <script setup lang="ts">
@@ -258,9 +281,11 @@ import router from '@/router'
 import * as billApi from '@/services/bill'
 import { formatFriendlyTime, getMonthRangeTimestamps } from '@/utils/commonUtil'
 import * as ElIcons from '@element-plus/icons-vue'
+import { Delete, Edit } from '@element-plus/icons-vue'
 import { ElLoading, ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { onMounted, reactive, ref } from 'vue'
 import VChart from 'vue-echarts'
+import AddBillView from '@/views/AddBillView.vue'
 // 引入需要的图表类型
 import { BarChart, PieChart } from 'echarts/charts'
 // 引入必要的组件（如 tooltip、legend 等）
@@ -392,6 +417,53 @@ const categoryFormRef = ref<FormInstance>()
 const category = ref(new Category('', '', 0))
 
 const financialObjectives = ref<Array<FinancialObjectives>>([])
+
+const addBillRef = ref()
+
+const handleEdit = (item: FinanceTransactions) => {
+  addBillRef.value.open({
+    id: item.id,
+    type: item.type,
+    amount: item.amount,
+    categoryId: item.categoryId,
+    transactionDate: item.transactionDate,
+    note: item.note,
+  })
+}
+
+const handleDelete = (item: FinanceTransactions) => {
+  if (!item.id) return
+
+  billApi
+    .deleteFinanceTransactions(item.id)
+    .then(() => {
+      ElMessage.success('删除成功')
+      refreshRecentlyBill()
+    })
+    .catch(() => {
+      ElMessage.error('删除失败')
+    })
+}
+
+const refreshRecentlyBill = () => {
+  const { monthStart, monthEnd } = getMonthRangeTimestamps() as {
+    monthStart: string
+    monthEnd: string
+  }
+  billApi
+    .getFinanceTransactionsList({
+      startTime: monthStart,
+      endTime: monthEnd,
+      pageNum: 1,
+      pageSize: 3,
+    })
+    .then((res) => {
+      recentlyBillList.value = res.data.data.result
+      recentlyBillList.value.forEach((item) => {
+        item.transactionDate = formatFriendlyTime(item.transactionDate)
+      })
+    })
+}
 
 //打开编辑/新增分类弹窗
 const openCategoryDialog = (isEdit: boolean, item: Category | null) => {
@@ -751,10 +823,181 @@ const flashCategory = () => {
   text-overflow: ellipsis;
 }
 
+/* 近期账单列表 */
+.recently-bill-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.recently-bill-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px;
+  border-radius: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.recently-bill-item:hover {
+  background-color: var(--color-bg-input);
+}
+
+.recently-bill-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bill-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.bill-icon.is-income {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.bill-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bill-category {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bill-note {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bill-date {
+  font-size: 11px;
+  color: var(--color-text-disabled);
+  margin-top: 2px;
+}
+
+.recently-bill-item-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.bill-amount {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-danger);
+  min-width: 70px;
+  text-align: right;
+}
+
+.bill-amount.is-income {
+  color: var(--color-success);
+}
+
+.bill-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bill-actions .el-button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--color-bg-input);
+  border: none;
+}
+
+.bill-actions .el-button:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
   .stats-overview {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-value {
+    font-size: 14px;
+  }
+
+  .recently-bill-item {
+    padding: 10px 4px;
+  }
+
+  .recently-bill-item-left {
+    gap: 10px;
+  }
+
+  .bill-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .recently-bill-item-right {
+    gap: 10px;
+  }
+
+  .bill-amount {
+    font-size: 15px;
+    min-width: 60px;
+  }
+
+  .bill-actions .el-button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .category-list-state {
+    flex-wrap: wrap;
+    height: auto;
+    justify-content: flex-start;
+  }
+
+  .consumption-pie-chart {
+    height: 160px;
+  }
+
+  :deep(.recently-bill .el-card__body),
+  :deep(.budget-list-card .el-card__body),
+  :deep(.Consumption-pie .el-card__body),
+  :deep(.category-list-card .el-card__body) {
+    height: auto;
   }
 }
 </style>

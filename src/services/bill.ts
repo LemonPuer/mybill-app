@@ -155,8 +155,19 @@ export const getAccountTree = () => {
  * @param data
  * @returns
  */
-export const parseBillText = (data: { message: string }) => {
+export const parseBillText = (message: string) => {
   return api.post('/app/analysis', {
-    data,
+    data: { message },
+  })
+}
+
+/**
+ * 删除账单
+ * @param id
+ * @returns
+ */
+export const deleteFinanceTransactions = (id: number) => {
+  return api.post('/app/delFinanceTransactions', {
+    data: { id },
   })
 }

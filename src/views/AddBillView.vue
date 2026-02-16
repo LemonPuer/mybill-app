@@ -60,9 +60,10 @@
 
 <script setup lang="ts">
 import { Plus } from '@element-plus/icons-vue'
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as billApi from '@/services/bill'
+import type Category from '@/models/Category'
 
 interface Props {
   title?: string
@@ -73,12 +74,13 @@ interface Props {
     type?: number
     amount?: number
     categoryId?: number
+    accountId?: number
     transactionDate?: string | number
     note?: string
   }
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   title: '新增账单',
   showType: false,
   showCategory: false,
@@ -89,13 +91,14 @@ const emit = defineEmits<{
 }>()
 
 const visible = ref(false)
-const categoryList = ref<any[]>([])
+const categoryList = ref<Category[]>([])
 
 const defaultData = {
   id: undefined as number | undefined,
-  type: 2,
+  type: 0,
   amount: 0,
   categoryId: 0,
+  accountId: 0,
   transactionDate: '',
   note: '',
 }
@@ -127,13 +130,15 @@ const handleSubmit = async () => {
       type: number
       amount: number
       categoryId: number
-      transactionDate: string | number
+      accountId: number
+      transactionDate: string
       note: string
     } = {
       type: formData.type,
       amount: formData.amount,
       categoryId: formData.categoryId,
-      transactionDate: formData.transactionDate,
+      accountId: formData.accountId,
+      transactionDate: String(formData.transactionDate),
       note: formData.note,
     }
     if (formData.id) {
@@ -143,7 +148,7 @@ const handleSubmit = async () => {
     ElMessage.success(formData.id ? '修改成功' : '添加成功')
     visible.value = false
     emit('success')
-  } catch (error) {
+  } catch {
     ElMessage.error('保存失败')
   }
 }

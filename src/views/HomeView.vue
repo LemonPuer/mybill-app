@@ -35,7 +35,7 @@ const handleSubmit = async (): Promise<void> => {
 
   loading.value = true
   try {
-    const res = await billApi.parseBillText({ message: inputText.value })
+    const res = await billApi.parseBillText(inputText.value)
     const parsed = res?.data?.data || {}
 
     // 调用 AddBillView 打开弹窗，并传入初始数据

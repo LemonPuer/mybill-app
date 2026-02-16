@@ -8,5 +8,7 @@ export default class FinanceTransactions {
     public account: string,
     public note: string,
     public id?: number,
+    public categoryId?: number,
+    public accountId?: number,
   ) {}
 }
