@@ -17,7 +17,8 @@ export default defineConfig({
     proxy: {
       '/api': {
         // target: 'http://192.168.31.100:8080',
-        target: 'http://localhost:8080',
+        // target: 'http://localhost:8080',
+        target: 'https://bill.lemonpuer.top/api',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },

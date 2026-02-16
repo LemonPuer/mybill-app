@@ -10,8 +10,12 @@ import { createApp } from 'vue'
 
 import App from './App.vue'
 import router from './router'
+import { initTheme } from './utils/themeUtil'
 
 const app = createApp(App)
+
+// 初始化主题
+initTheme()
 
 // 注册所有图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

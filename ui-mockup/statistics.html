@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>统计 - mybill</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <main class="page-content">
+        <div class="statistics-view">
+          <!-- 时间切换 -->
+          <div class="time-switch" style="margin-bottom: 16px">
+            <div class="time-option active">按月</div>
+            <div class="time-option">按年</div>
+          </div>
+
+          <!-- 统计网格 -->
+          <div class="statistics-grid">
+            <!-- 收支趋势 -->
+            <div class="dashboard-card stat-card-full">
+              <div class="card-header">
+                <span class="card-title">收支趋势</span>
+                <div class="time-switch">
+                  <div class="time-option active">月</div>
+                  <div class="time-option">年</div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <span class="chart-placeholder-text">折线图区域 - 收支趋势</span>
+              </div>
+              <div class="data-summary">
+                <div class="summary-item">
+                  <div class="summary-label">总收入</div>
+                  <div class="summary-value income">+12,580.00</div>
+                </div>
+                <div class="summary-item">
+                  <div class="summary-label">总支出</div>
+                  <div class="summary-value expense">-4,320.50</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 分类占比 -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <span class="card-title">分类占比</span>
+              </div>
+              <div class="chart-container">
+                <span class="chart-placeholder-text">饼图区域</span>
+              </div>
+            </div>
+
+            <!-- 分类对比 -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <span class="card-title">分类对比</span>
+              </div>
+              <div class="chart-container">
+                <span class="chart-placeholder-text">柱状图区域</span>
+              </div>
+            </div>
+
+            <!-- 预算执行 -->
+            <div class="dashboard-card stat-card-full">
+              <div class="card-header">
+                <span class="card-title">预算执行情况</span>
+              </div>
+              <div class="budget-list" style="padding: 8px 0">
+                <div class="budget-item">
+                  <div class="budget-header">
+                    <span class="budget-label">餐饮</span>
+                    <span class="budget-value">680 / 1000 元 (68%)</span>
+                  </div>
+                  <div class="budget-bar">
+                    <div class="budget-progress" style="width: 68%"></div>
+                  </div>
+                </div>
+                <div class="budget-item">
+                  <div class="budget-header">
+                    <span class="budget-label">购物</span>
+                    <span class="budget-value">850 / 800 元 (106%)</span>
+                  </div>
+                  <div class="budget-bar">
+                    <div
+                      class="budget-progress"
+                      style="width: 100%; background: linear-gradient(90deg, #ef4444, #f87171)"
+                    ></div>
+                  </div>
+                </div>
+                <div class="budget-item">
+                  <div class="budget-header">
+                    <span class="budget-label">交通</span>
+                    <span class="budget-value">200 / 300 元 (67%)</span>
+                  </div>
+                  <div class="budget-bar">
+                    <div class="budget-progress" style="width: 67%"></div>
+                  </div>
+                </div>
+                <div class="budget-item">
+                  <div class="budget-header">
+                    <span class="budget-label">娱乐</span>
+                    <span class="budget-value">150 / 500 元 (30%)</span>
+                  </div>
+                  <div class="budget-bar">
+                    <div class="budget-progress" style="width: 30%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 底部导航 -->
+      <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+          <span class="nav-icon">✏️</span>
+          <span class="nav-label">记账</span>
+        </a>
+        <a href="dashboard.html" class="nav-item">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">看板</span>
+        </a>
+        <a href="bills.html" class="nav-item">
+          <span class="nav-icon">💰</span>
+          <span class="nav-label">账单</span>
+        </a>
+        <a href="statistics.html" class="nav-item active">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">统计</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">设置</span>
+        </a>
+      </nav>
+    </div>
+  </body>
+</html>

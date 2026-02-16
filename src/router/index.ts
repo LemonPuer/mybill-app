@@ -13,17 +13,27 @@ const router = createRouter({
         {
           path: '/',
           name: 'home',
+          component: () => import('@/views/HomeView.vue'),
+        },
+        {
+          path: '/dashboard',
+          name: 'dashboard',
           component: () => import('@/views/DashboardView.vue'),
         },
         {
-          path: '/bill',
-          name: 'bill',
+          path: '/bills',
+          name: 'bills',
           component: () => import('@/views/BillView.vue'),
         },
         {
-          path: '/manage',
-          name: 'manage',
-          component: () => import('@/views/manageView.vue'),
+          path: '/statistics',
+          name: 'statistics',
+          component: () => import('@/views/StatisticsView.vue'),
+        },
+        {
+          path: '/settings',
+          name: 'settings',
+          component: () => import('@/views/SettingsView.vue'),
         },
       ],
     },

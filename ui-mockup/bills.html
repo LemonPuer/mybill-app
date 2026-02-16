@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>账单 - mybill</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <main class="page-content">
+        <div class="bills-view">
+          <!-- 顶部筛选栏 -->
+          <div class="filter-bar">
+            <div class="filter-item active">全部</div>
+            <div class="filter-item">今天</div>
+            <div class="filter-item">本月</div>
+            <div class="filter-item">上月</div>
+            <div class="filter-item">支出</div>
+            <div class="filter-item">收入</div>
+          </div>
+
+          <!-- 账单列表 -->
+          <div class="bill-groups">
+            <!-- 今天 -->
+            <div class="bill-group">
+              <div class="bill-group-header">今天</div>
+              <div class="bill-group-list">
+                <div class="bill-item-with-actions">
+                  <div class="bill-icon">🍜</div>
+                  <div class="bill-info">
+                    <div class="bill-note">午餐</div>
+                    <div class="bill-date">12:30</div>
+                  </div>
+                  <div class="bill-amount expense">-25.00</div>
+                  <div class="bill-actions">
+                    <button class="action-btn" title="编辑">✏️</button>
+                    <button class="action-btn delete" title="删除">🗑️</button>
+                  </div>
+                </div>
+                <div class="bill-item-with-actions">
+                  <div class="bill-icon">🚕</div>
+                  <div class="bill-info">
+                    <div class="bill-note">打车回家</div>
+                    <div class="bill-date">09:15</div>
+                  </div>
+                  <div class="bill-amount expense">-18.50</div>
+                  <div class="bill-actions">
+                    <button class="action-btn" title="编辑">✏️</button>
+                    <button class="action-btn delete" title="删除">🗑️</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 昨天 -->
+            <div class="bill-group">
+              <div class="bill-group-header">昨天</div>
+              <div class="bill-group-list">
+                <div class="bill-item-with-actions">
+                  <div class="bill-icon">💵</div>
+                  <div class="bill-info">
+                    <div class="bill-note">工资</div>
+                    <div class="bill-date">昨天</div>
+                  </div>
+                  <div class="bill-amount income">+8,000.00</div>
+                  <div class="bill-actions">
+                    <button class="action-btn" title="编辑">✏️</button>
+                    <button class="action-btn delete" title="删除">🗑️</button>
+                  </div>
+                </div>
+                <div class="bill-item-with-actions">
+                  <div class="bill-icon">🛒</div>
+                  <div class="bill-info">
+                    <div class="bill-note">超市购物</div>
+                    <div class="bill-date">昨天 18:00</div>
+                  </div>
+                  <div class="bill-amount expense">-156.80</div>
+                  <div class="bill-actions">
+                    <button class="action-btn" title="编辑">✏️</button>
+                    <button class="action-btn delete" title="删除">🗑️</button>
+                  </div>
+                </div>
+                <div class="bill-item-with-actions">
+                  <div class="bill-icon">🎮</div>
+                  <div class="bill-info">
+                    <div class="bill-note">游戏充值</div>
+                    <div class="bill-date">昨天 20:30</div>
+                  </div>
+                  <div class="bill-amount expense">-68.00</div>
+                  <div class="bill-actions">
+                    <button class="action-btn" title="编辑">✏️</button>
+                    <button class="action-btn delete" title="删除">🗑️</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2月14日 -->
+            <div class="bill-group">
+              <div class="bill-group-header">2月14日</div>
+              <div class="bill-group-list">
+                <div class="bill-item-with-actions">
+                  <div class="bill-icon">🍜</div>
+                  <div class="bill-info">
+                    <div class="bill-note">早餐</div>
+                    <div class="bill-date">08:00</div>
+                  </div>
+                  <div class="bill-amount expense">-8.00</div>
+                  <div class="bill-actions">
+                    <button class="action-btn" title="编辑">✏️</button>
+                    <button class="action-btn delete" title="删除">🗑️</button>
+                  </div>
+                </div>
+                <div class="bill-item-with-actions">
+                  <div class="bill-icon">📱</div>
+                  <div class="bill-info">
+                    <div class="bill-note">话费充值</div>
+                    <div class="bill-date">10:00</div>
+                  </div>
+                  <div class="bill-amount expense">-50.00</div>
+                  <div class="bill-actions">
+                    <button class="action-btn" title="编辑">✏️</button>
+                    <button class="action-btn delete" title="删除">🗑️</button>
+                  </div>
+                </div>
+                <div class="bill-item-with-actions">
+                  <div class="bill-icon">💰</div>
+                  <div class="bill-info">
+                    <div class="bill-note">兼职收入</div>
+                    <div class="bill-date">15:00</div>
+                  </div>
+                  <div class="bill-amount income">+520.00</div>
+                  <div class="bill-actions">
+                    <button class="action-btn" title="编辑">✏️</button>
+                    <button class="action-btn delete" title="删除">🗑️</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 悬浮添加按钮 -->
+          <button class="fab-button" title="添加账单">+</button>
+        </div>
+      </main>
+
+      <!-- 底部导航 -->
+      <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+          <span class="nav-icon">✏️</span>
+          <span class="nav-label">记账</span>
+        </a>
+        <a href="dashboard.html" class="nav-item">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">看板</span>
+        </a>
+        <a href="bills.html" class="nav-item active">
+          <span class="nav-icon">💰</span>
+          <span class="nav-label">账单</span>
+        </a>
+        <a href="statistics.html" class="nav-item">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">统计</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">设置</span>
+        </a>
+      </nav>
+    </div>
+
+    <style>
+      /* 悬浮按钮额外样式 */
+      .fab-button {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+        border: none;
+        color: #fff;
+        font-size: 28px;
+        font-weight: 300;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(20, 184, 166, 0.4);
+        transition: all 0.3s ease;
+        z-index: 99;
+      }
+
+      .fab-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 30px rgba(20, 184, 166, 0.5);
+      }
+    </style>
+  </body>
+</html>

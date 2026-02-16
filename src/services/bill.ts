@@ -149,3 +149,14 @@ export const getAccountTree = () => {
     data: {},
   })
 }
+
+/**
+ * 智能解析账单文本
+ * @param data
+ * @returns
+ */
+export const parseBillText = (data: { text: string }) => {
+  return api.post('/app/parseBillText', {
+    data,
+  })
+}

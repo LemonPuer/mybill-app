@@ -1,3 +1,6 @@
+  /* Theme variables */
+@import './theme.css';
+
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
   --vt-c-white: #ffffff;
@@ -36,11 +39,11 @@
   --section-gap: 160px;
 
   /* 主要配色方案 */
-  --color-primary: #6200EE;
-  --color-primary-light: #BB86FC;
-  --color-success: #00BFA6;
-  --color-danger: #FF5252;
-  --color-warning: #FFC107;
+  --color-primary: #6200ee;
+  --color-primary-light: #bb86fc;
+  --color-success: #00bfa6;
+  --color-danger: #ff5252;
+  --color-warning: #ffc107;
 
   /* 中性色 */
   --color-white: #ffffff;
@@ -107,7 +110,8 @@ body {
   color: var(--color-text);
   background: var(--color-background);
   line-height: 1.6;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 16px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

@@ -24,21 +24,20 @@ body {
 a,
 .green {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
+  color: var(--color-primary);
   transition: 0.4s;
   padding: 3px;
 }
 
 @media (hover: hover) {
   a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    background-color: rgba(20, 184, 166, 0.1);
   }
 }
 
 @media (min-width: 1024px) {
   body {
-    display: flex;
-    place-items: center;
+    display: block;
     min-height: 100vh;
   }
 
@@ -55,14 +54,87 @@ a,
   padding: 0 15px;
 }
 
-/* 主容器 - 添加最小高度确保内容填充 */
+/* 主容器 */
 .main-container {
-  min-height: calc(100vh - 124px); /* 减去头部和底部导航的高度 */
-  padding-bottom: 80px; /* 确保内容不被底部导航栏遮挡 */
+  min-height: calc(100vh - 124px);
+  padding-bottom: 80px;
   display: flex;
   flex-direction: column;
-  gap: 12px; /* 统一间距 */
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  gap: 12px;
+  background: var(--color-bg-page);
   border-radius: 20px;
   padding: 10px;
+}
+
+/* 深色模式覆盖 - Element Plus */
+.dark {
+  /* Element Plus 组件覆盖 */
+  --el-bg-color: var(--color-bg-card);
+  --el-bg-color-overlay: var(--color-bg-card);
+  --el-text-color-primary: var(--color-text-primary);
+  --el-text-color-regular: var(--color-text-primary);
+  --el-text-color-secondary: var(--color-text-secondary);
+  --el-border-color: var(--color-border);
+  --el-border-color-light: var(--color-border);
+  --el-fill-color-blank: var(--color-bg-input);
+  --el-color-primary: var(--color-primary);
+}
+
+.dark .el-card {
+  --el-card-bg-color: var(--color-bg-card);
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+.dark .el-button {
+  --el-button-bg-color: var(--color-bg-card);
+  --el-button-border-color: var(--color-border);
+  --el-button-text-color: var(--color-text-primary);
+}
+
+.dark .el-input__wrapper {
+  background-color: var(--color-bg-input);
+  box-shadow: 0 0 0 1px var(--color-border) inset;
+}
+
+.dark .el-input__inner {
+  color: var(--color-text-primary);
+}
+
+.dark .el-select-dropdown {
+  background-color: var(--color-bg-card);
+  border-color: var(--color-border);
+}
+
+.dark .el-dialog {
+  --el-dialog-bg-color: var(--color-bg-card);
+}
+
+.dark .el-form-item__label {
+  color: var(--color-text-primary);
+}
+
+.dark .el-radio-button__inner {
+  background-color: var(--color-bg-input);
+  border-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.dark .el-radio-button__original-radio:checked + .el-radio-button__inner {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.dark .el-skeleton__item {
+  background: linear-gradient(
+    90deg,
+    var(--color-bg-input) 25%,
+    var(--color-bg-card) 37%,
+    var(--color-bg-input) 63%
+  );
+}
+
+.dark .el-skeleton__circle {
+  background: var(--color-bg-input);
 }

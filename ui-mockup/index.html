@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>记账 - mybill</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 页面内容 -->
+      <main class="page-content">
+        <div class="home-view">
+          <div class="input-container">
+            <textarea
+              class="smart-input"
+              placeholder="输入转账记录，如：今天吃饭花了50元"
+            ></textarea>
+            <button class="submit-btn">解析</button>
+          </div>
+        </div>
+      </main>
+
+      <!-- 底部导航 -->
+      <nav class="bottom-nav">
+        <a href="index.html" class="nav-item active">
+          <span class="nav-icon">✏️</span>
+          <span class="nav-label">记账</span>
+        </a>
+        <a href="dashboard.html" class="nav-item">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">看板</span>
+        </a>
+        <a href="bills.html" class="nav-item">
+          <span class="nav-icon">💰</span>
+          <span class="nav-label">账单</span>
+        </a>
+        <a href="statistics.html" class="nav-item">
+          <span class="nav-icon">📈</span>
+          <span class="nav-label">统计</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">设置</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- 确认弹窗 -->
+    <div class="modal-overlay" id="confirmModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>确认账单信息</h3>
+          <button class="close-btn">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>类型</label>
+            <div class="radio-group">
+              <label class="radio-item">
+                <input type="radio" name="type" value="income" />
+                <span>收入</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="type" value="expense" checked />
+                <span>支出</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>金额</label>
+            <input type="number" class="form-input" value="50.00" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label>分类</label>
+            <select class="form-select">
+              <option>餐饮</option>
+              <option>交通</option>
+              <option>购物</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>日期</label>
+            <input type="datetime-local" class="form-input" value="2026-02-15T12:00" />
+          </div>
+          <div class="form-group">
+            <label>备注</label>
+            <input type="text" class="form-input" placeholder="可选备注" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary">取消</button>
+          <button class="btn btn-primary">确认</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,25 +1,23 @@
 <template>
   <div class="header">
-    <el-header>
-      <div class="container">
-        <div class="header-content">
-          <div class="header-title">{{ props.title }}</div>
-          <div class="user-info">
-            <span class="username">{{ userStore.username }}</span>
-            <el-dropdown trigger="click" @command="handleCommand">
-              <el-avatar :size="32" class="user-avatar" :src="userStore.avatarUrl">
-                {{ userInitial }}
-              </el-avatar>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
+    <div class="container">
+      <div class="header-content">
+        <div class="header-title">{{ props.title }}</div>
+        <div class="user-info">
+          <span class="username">{{ userStore.username }}</span>
+          <el-dropdown trigger="click" @command="handleCommand">
+            <el-avatar :size="32" class="user-avatar" :src="userStore.avatarUrl">
+              {{ userInitial }}
+            </el-avatar>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </div>
-    </el-header>
+    </div>
   </div>
 </template>
 
@@ -34,7 +32,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: '仪表盘'
+  title: '仪表盘',
 })
 
 const router = useRouter()
@@ -49,14 +47,16 @@ const handleCommand = (command: string) => {
       ElMessageBox.confirm('确定要退出登录吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        userStore.$reset()
-        localStorage.clear()
-        router.push('/login')
-      }).catch(() => {
-        // 取消操作
+        type: 'warning',
       })
+        .then(() => {
+          userStore.$reset()
+          localStorage.clear()
+          router.push('/login')
+        })
+        .catch(() => {
+          // 取消操作
+        })
       break
   }
 }
@@ -64,78 +64,65 @@ const handleCommand = (command: string) => {
 
 <style scoped>
 .header {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #7C43E1 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   color: white;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 0.25rem 0.75rem rgba(98, 0, 238, 0.15);
+  box-shadow: 0 4px 20px rgba(20, 184, 166, 0.25);
 }
 
 .container {
-  max-width: 600px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 15px;
 }
 
 .header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 100%;
-  min-height: 3.5rem;
+  height: 56px;
+  padding: 0 16px;
 }
 
 .header-title {
   font-size: 1.125rem;
   font-weight: 600;
-  transition: transform 0.3s ease;
-}
-
-.header-title:hover {
-  transform: translateX(0.3125rem);
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 .username {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 500;
-  transition: opacity 0.3s ease;
 }
 
 .user-avatar {
-  background-color: #fff;
-  color: var(--color-primary);
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .user-avatar:hover {
   transform: scale(1.1);
-  box-shadow: 0 0.125rem 0.5rem rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
-@media screen and (max-width: 48rem) {
-  .container {
-    padding: 0 0.75rem;
-  }
-
-  .header-title {
-    font-size: 1rem;
-  }
-
-  .user-info {
-    gap: 0.5rem;
-  }
+/* 深色模式 */
+:deep(.dark) .header {
+  background: linear-gradient(135deg, var(--color-primary-dark) 0%, #0f172a 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-@media screen and (max-width: 30rem) {
+@media (max-width: 480px) {
   .username {
     display: none;
   }
