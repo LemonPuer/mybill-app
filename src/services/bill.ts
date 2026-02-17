@@ -43,6 +43,32 @@ export const getFinanceTransactionsList = (data: {
 }
 
 /**
+ * 新增/编辑预算
+ */
+export const saveBudget = (data: {
+  id?: number
+  categoryId: number
+  amount: number
+  startTime: string
+  endTime: string
+}) => {
+  return api.post('/app/saveBudget', {
+    data: {
+      ...data,
+    },
+  })
+}
+
+/**
+ * 删除预算
+ */
+export const deleteBudget = (id: number) => {
+  return api.post('/app/delBudget', {
+    data: { id },
+  })
+}
+
+/**
  * 获取预算列表
  */
 export const getBudgetInfo = (data: { startTime: string; endTime: string }) => {
@@ -131,10 +157,10 @@ export const saveAccount = (data: Account) => {
  * @param data
  * @returns
  */
-export const getAccounts = (data: { pid: number }) => {
+export const getAccounts = (pid: number) => {
   return api.post('/app/getAccounts', {
     data: {
-      ...data,
+      pid,
     },
   })
 }
@@ -168,6 +194,17 @@ export const parseBillText = (message: string) => {
  */
 export const deleteFinanceTransactions = (id: number) => {
   return api.post('/app/delFinanceTransactions', {
+    data: { id },
+  })
+}
+
+/**
+ * 删除分类
+ * @param id 分类ID
+ * @returns
+ */
+export const deleteCategory = (id: number) => {
+  return api.post('/app/deleteCategory', {
     data: { id },
   })
 }

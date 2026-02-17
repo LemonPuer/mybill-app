@@ -79,8 +79,8 @@
     <AddBillView
       ref="addBillRef"
       title="编辑账单"
-      :show-type="true"
-      :show-category="true"
+      :showType="true"
+      :showCategory="true"
       @success="refreshBills"
     />
   </div>

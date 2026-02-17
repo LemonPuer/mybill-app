@@ -35,6 +35,11 @@ const router = createRouter({
           name: 'settings',
           component: () => import('@/views/SettingsView.vue'),
         },
+        {
+          path: '/settings/categories',
+          name: 'settings-categories',
+          component: () => import('@/views/settings/CategoriesView.vue'),
+        },
       ],
     },
     {

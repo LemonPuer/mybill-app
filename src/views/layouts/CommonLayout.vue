@@ -31,14 +31,20 @@ const userInfoStore = useUserInfoStore()
 const dictionaryStore = useDictionaryStore()
 
 const RouteName: Record<string, string> = {
-  home: '仪表盘',
-  bill: '账单',
-  manage: '管理',
+  home: 'AI记账',
+  dashboard: '仪表盘',
+  bills: '账单详情',
+  statistics:'财务统计',
+  settings: '个人设置',
 }
 
 const route = useRoute()
 const title = computed((): string => {
   const routeName = route.name?.toString()
+  // 个人设置的特殊配置
+  if (route.path && route.path.startsWith('/settings')) {
+    return RouteName['settings']
+  }
   return RouteName[routeName ?? ''] ?? ''
 })
 

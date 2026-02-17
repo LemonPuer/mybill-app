@@ -74,7 +74,7 @@ const router = useRouter()
 const themeStore = useThemeStore()
 
 const goToPage = (path: string) => {
-  ElMessage.info('页面开发中')
+  router.push(path)
 }
 
 const showAbout = () => {

@@ -141,7 +141,7 @@ const submitAccount = () => {
 
 
 const flashAccountList = () => {
-  billApi.getAccounts({ pid: 0 }).then((res) => {
+  billApi.getAccounts(0).then((res) => {
     accountList.value = res.data.data;
   });
 };

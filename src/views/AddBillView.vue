@@ -26,7 +26,7 @@
         <el-form-item label="分类" v-if="showCategory">
           <el-select v-model="formData.categoryId" placeholder="选择分类" style="width: 100%">
             <el-option
-              v-for="cat in categoryList"
+              v-for="cat in categoryStore.categoryList"
               :key="cat.id"
               :label="cat.category"
               :value="cat.id"
@@ -60,10 +60,12 @@
 
 <script setup lang="ts">
 import { Plus } from '@element-plus/icons-vue'
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as billApi from '@/services/bill'
-import type Category from '@/models/Category'
+import { useCategoryStore } from '@/stores/useCategoryStore'
+
+const categoryStore = useCategoryStore()
 
 interface Props {
   title?: string
@@ -91,7 +93,6 @@ const emit = defineEmits<{
 }>()
 
 const visible = ref(false)
-const categoryList = ref<Category[]>([])
 
 const defaultData = {
   id: undefined as number | undefined,
@@ -115,6 +116,8 @@ const open = (initialData?: Props['initialData']) => {
   } else {
     Object.assign(formData, defaultData)
   }
+  // 每次打开都重新获取分类
+  categoryStore.fetchCategories()
   visible.value = true
 }
 
@@ -152,19 +155,6 @@ const handleSubmit = async () => {
     ElMessage.error('保存失败')
   }
 }
-
-const fetchCategories = async () => {
-  try {
-    const res = await billApi.getCategory({ pageNum: 1, pageSize: 100 })
-    categoryList.value = res.data.data.result || []
-  } catch (error) {
-    console.error('获取分类失败:', error)
-  }
-}
-
-onMounted(() => {
-  fetchCategories()
-})
 
 defineExpose({
   open,
