@@ -27,11 +27,36 @@ const inputText = ref<string>('')
 const loading = ref<boolean>(false)
 const addBillRef = ref<InstanceType<typeof AddBillView>>()
 
-const handleSubmit = async (): Promise<void> => {
+/**
+ * 防抖处理 - 防止快速连续点击
+ * @param fn - 要执行的函数
+ * @param delay - 延迟时间（毫秒）
+ */
+const debounce = <T extends (...args: any[]) => any>(
+  fn: T,
+  delay: number = 1000,
+): ((...args: Parameters<T>) => void) => {
+  let timer: ReturnType<typeof setTimeout> | null = null
+  return (...args: Parameters<T>) => {
+    if (timer) clearTimeout(timer)
+    timer = setTimeout(() => {
+      fn(...args)
+    }, delay)
+  }
+}
+
+/**
+ * 解析文本并打开账单确认弹窗
+ * 添加了防抖处理，防止重复提交
+ */
+const handleSubmit = debounce(async (): Promise<void> => {
   if (!inputText.value.trim()) {
     ElMessage.warning('请输入账单内容')
     return
   }
+
+  // 防止重复提交
+  if (loading.value) return
 
   loading.value = true
   try {
@@ -49,15 +74,17 @@ const handleSubmit = async (): Promise<void> => {
 
     // 清空输入框
     inputText.value = ''
-  } catch (error) {
+  } catch (error: any) {
     console.error('解析失败:', error)
-    ElMessage.error('解析失败，请手动添加')
+    // 显示具体错误原因
+    const errorMsg = error?.response?.data?.msg || '解析失败，请手动添加'
+    ElMessage.warning(errorMsg)
     // 打开空白表单让用户手动填写
     addBillRef.value?.open()
   } finally {
     loading.value = false
   }
-}
+}, 1500) // 1.5秒内不能重复点击
 </script>
 
 <style scoped>

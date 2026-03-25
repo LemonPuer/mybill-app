@@ -1,8 +1,5 @@
 <template>
   <div class="add-bill-container">
-    <!-- 新增账单按钮 -->
-    <el-button class="floating-button" @click="open" :icon="Plus" size="large" circle />
-
     <!-- 弹窗 -->
     <el-dialog
       v-model="visible"
@@ -51,16 +48,22 @@
       </el-form>
 
       <template #footer>
-        <el-button @click="visible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmit">确认</el-button>
+        <el-button @click="visible = false" :disabled="submitting">取消</el-button>
+        <el-button
+          type="primary"
+          @click="handleSubmit"
+          :loading="submitting"
+          :disabled="submitting"
+        >
+          确认
+        </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Plus } from '@element-plus/icons-vue'
-import { ref, reactive } from 'vue'
+import { computed, ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as billApi from '@/services/bill'
 import { useCategoryStore } from '@/stores/useCategoryStore'
@@ -82,7 +85,7 @@ interface Props {
   }
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   title: '新增账单',
   showType: false,
   showCategory: false,
@@ -92,13 +95,17 @@ const emit = defineEmits<{
   success: []
 }>()
 
+// 是否显示分类（用于校验）
+const showCategory = computed(() => props.showCategory)
+
 const visible = ref(false)
+const submitting = ref(false)
 
 const defaultData = {
   id: undefined as number | undefined,
-  type: 0,
+  type: 2, // 默认支出
   amount: 0,
-  categoryId: 0,
+  categoryId: undefined as number | undefined,
   accountId: 0,
   transactionDate: '',
   note: '',
@@ -122,10 +129,21 @@ const open = (initialData?: Props['initialData']) => {
 }
 
 const handleSubmit = async () => {
-  if (formData.amount <= 0) {
+  // 金额校验
+  if (!formData.amount || formData.amount <= 0) {
     ElMessage.warning('请输入有效金额')
     return
   }
+
+  // 分类校验（如果showCategory为true）
+  if (showCategory.value && !formData.categoryId) {
+    ElMessage.warning('请选择分类')
+    return
+  }
+
+  // 防止重复提交
+  if (submitting.value) return
+  submitting.value = true
 
   try {
     const payload: {
@@ -139,7 +157,7 @@ const handleSubmit = async () => {
     } = {
       type: formData.type,
       amount: formData.amount,
-      categoryId: formData.categoryId,
+      categoryId: formData.categoryId ?? 0,
       accountId: formData.accountId,
       transactionDate: String(formData.transactionDate),
       note: formData.note,
@@ -151,8 +169,11 @@ const handleSubmit = async () => {
     ElMessage.success(formData.id ? '修改成功' : '添加成功')
     visible.value = false
     emit('success')
-  } catch {
-    ElMessage.error('保存失败')
+  } catch (error: any) {
+    console.error('保存失败:', error)
+    ElMessage.error(error?.response?.data?.msg || '保存失败，请稍后重试')
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -162,26 +183,5 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 悬浮按钮 */
-.floating-button {
-  position: fixed;
-  bottom: 80px;
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: white;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(20, 184, 166, 0.4);
-  transition: all 0.3s ease;
-  z-index: 99;
-}
-
-.floating-button:hover {
-  transform: scale(1.1);
-  box-shadow: 0 8px 30px rgba(20, 184, 166, 0.5);
-}
+/* 无需额外样式，弹窗由 Element Plus 提供 */
 </style>

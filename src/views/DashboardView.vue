@@ -85,11 +85,12 @@
                 <div class="bill-actions">
                   <el-button :icon="Edit" circle size="small" text @click="handleEdit(item)" />
                   <el-button
-                    :icon="Delete"
+                    :icon="deletingIds.has(item.id) ? Loading : Delete"
                     circle
                     size="small"
                     text
                     type="danger"
+                    :disabled="deletingIds.has(item.id)"
                     @click="handleDelete(item)"
                   />
                 </div>
@@ -126,7 +127,10 @@
         >
           <template #header>
             <strong class="card-header-title">财务目标</strong>
-            <el-link class="card-header-link" @click.prevent="skipBill('/manage')" underline="never"
+            <el-link
+              class="card-header-link"
+              @click.prevent="skipBill('/settings/budget')"
+              underline="never"
               >管理目标</el-link
             >
           </template>
@@ -165,16 +169,33 @@
         >
           <template #header>
             <strong class="card-header-title">预算执行情况</strong>
-            <el-link class="card-header-link" @click.prevent="skipBill('/manage')" underline="never"
+            <el-link
+              class="card-header-link"
+              @click.prevent="skipBill('/settings/budget')"
+              underline="never"
               >查看全部</el-link
             >
           </template>
-          <div class="budget-list-empty-state" v-if="recentlyBillList.length === 0">
+          <div class="budget-list-empty-state" v-if="budgetList.length === 0">
             <div class="common-empty-state">
               <strong>暂未设置预算</strong>
             </div>
           </div>
-          <!-- todo：预算数据展示 -->
+          <div v-else class="budget-list-content">
+            <div v-for="item in budgetList" :key="item.id" class="budget-item">
+              <div class="budget-header">
+                <span class="budget-label">{{ item.categoryName }}</span>
+                <span class="budget-value"> {{ item.spent || 0 }} / {{ item.amount }} 元 </span>
+              </div>
+              <div class="budget-bar">
+                <div
+                  class="budget-progress"
+                  :style="{ width: `${Math.min(((item.spent || 0) / item.amount) * 100, 100)}%` }"
+                  :class="{ over: (item.spent || 0) > item.amount }"
+                ></div>
+              </div>
+            </div>
+          </div>
         </el-card>
 
         <!-- 类型管理 -->
@@ -184,7 +205,10 @@
         >
           <template #header>
             <strong class="card-header-title">类型管理</strong>
-            <el-link class="card-header-link" @click.prevent="skipBill('/manage')" underline="never"
+            <el-link
+              class="card-header-link"
+              @click.prevent="skipBill('/settings/budget')"
+              underline="never"
               >查看全部</el-link
             >
           </template>
@@ -281,7 +305,7 @@ import router from '@/router'
 import * as billApi from '@/services/bill'
 import { formatFriendlyTime, getMonthRangeTimestamps } from '@/utils/commonUtil'
 import * as ElIcons from '@element-plus/icons-vue'
-import { Delete, Edit } from '@element-plus/icons-vue'
+import { Delete, Edit, Loading } from '@element-plus/icons-vue'
 import { ElLoading, ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { onMounted, reactive, ref } from 'vue'
 import VChart from 'vue-echarts'
@@ -418,7 +442,18 @@ const category = ref(new Category('', '', 0))
 
 const financialObjectives = ref<Array<FinancialObjectives>>([])
 
+// 预算列表
+interface BudgetItem {
+  id: number
+  categoryId: number
+  categoryName: string
+  amount: number
+  spent: number
+}
+const budgetList = ref<Array<BudgetItem>>([])
+
 const addBillRef = ref()
+const deletingIds = ref<Set<number | undefined>>(new Set()) // 正在删除的账单ID集合
 
 const handleEdit = (item: FinanceTransactions) => {
   addBillRef.value.open({
@@ -432,7 +467,10 @@ const handleEdit = (item: FinanceTransactions) => {
 }
 
 const handleDelete = (item: FinanceTransactions) => {
-  if (!item.id) return
+  if (!item.id || deletingIds.value.has(item.id)) return
+
+  // 标记为正在删除
+  deletingIds.value.add(item.id)
 
   billApi
     .deleteFinanceTransactions(item.id)
@@ -440,8 +478,12 @@ const handleDelete = (item: FinanceTransactions) => {
       ElMessage.success('删除成功')
       refreshRecentlyBill()
     })
-    .catch(() => {
-      ElMessage.error('删除失败')
+    .catch((error: any) => {
+      console.error('删除失败:', error)
+      ElMessage.error(error?.response?.data?.msg || '删除失败，请稍后重试')
+    })
+    .finally(() => {
+      deletingIds.value.delete(item.id)
     })
 }
 
@@ -558,6 +600,15 @@ onMounted(() => {
       })
 
     //预算执行情况
+    billApi
+      .getBudgetInfo({ startTime: monthStart, endTime: monthEnd, pageNum: 1, pageSize: 3 })
+      .then((res) => {
+        console.log('预算数据:', res.data.data)
+        budgetList.value = res.data.data.result || []
+      })
+      .catch((err) => {
+        console.error('获取预算失败:', err)
+      })
 
     //消费分类占比
 
@@ -658,6 +709,57 @@ const flashCategory = () => {
   height: 200px;
 }
 
+.budget-list-content {
+  padding: 4px 0;
+}
+
+.budget-item {
+  margin-bottom: 14px;
+  padding: 10px;
+  background: var(--color-bg-input);
+  border-radius: 12px;
+}
+
+.budget-item:last-child {
+  margin-bottom: 0;
+}
+
+.budget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.budget-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.budget-value {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.budget-bar {
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.budget-progress {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.budget-progress.over {
+  background: linear-gradient(90deg, var(--color-danger), #f87171);
+}
+
 .category-list-state {
   display: flex;
   height: 60px;
@@ -714,8 +816,10 @@ const flashCategory = () => {
 }
 
 :deep(.budget-list-card .el-card__body) {
-  padding: 0px 10px 10px 10px;
-  height: 210px;
+  padding: 8px 12px;
+  min-height: 120px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 :deep(.Consumption-pie .el-card__body) {

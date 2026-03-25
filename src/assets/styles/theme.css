@@ -3,6 +3,53 @@
    主题：现代简约 + 翠绿主色 + 大圆角
    ======================================== */
 
+/* ========================================
+   Element Plus 组件样式覆盖
+   使用 !important 确保覆盖默认样式
+   ======================================== */
+
+/* 主要按钮 */
+.el-button--primary {
+  --el-button-bg-color: var(--color-primary) !important;
+  --el-button-border-color: var(--color-primary) !important;
+  --el-button-hover-bg-color: var(--color-primary-light) !important;
+  --el-button-hover-border-color: var(--color-primary-light) !important;
+  --el-button-active-bg-color: var(--color-primary-dark) !important;
+  --el-button-active-border-color: var(--color-primary-dark) !important;
+}
+
+/* 成功按钮 */
+.el-button--success {
+  --el-button-bg-color: var(--color-success) !important;
+  --el-button-border-color: var(--color-success) !important;
+}
+
+/* 危险按钮 */
+.el-button--danger {
+  --el-button-bg-color: var(--color-danger) !important;
+  --el-button-border-color: var(--color-danger) !important;
+}
+
+/* 警告按钮 */
+.el-button--warning {
+  --el-button-bg-color: var(--color-warning) !important;
+  --el-button-border-color: var(--color-warning) !important;
+}
+
+/* 信息按钮 */
+.el-button--info {
+  --el-button-bg-color: var(--color-info) !important;
+  --el-button-border-color: var(--color-info) !important;
+}
+
+/* 圆角覆盖 */
+.el-button,
+.el-input__wrapper,
+.el-card,
+.el-dialog {
+  border-radius: var(--radius-button) !important;
+}
+
 /* 浅色模式变量（默认） */
 :root {
   /* 主色系 */

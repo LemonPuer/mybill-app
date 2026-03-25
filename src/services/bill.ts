@@ -71,7 +71,12 @@ export const deleteBudget = (id: number) => {
 /**
  * 获取预算列表
  */
-export const getBudgetInfo = (data: { startTime: string; endTime: string }) => {
+export const getBudgetInfo = (data: {
+  startTime: string
+  endTime: string
+  pageNum: number
+  pageSize: number
+}) => {
   return api.post('/app/getBudgetInfo', {
     data: {
       ...data,

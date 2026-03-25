@@ -40,6 +40,11 @@ const router = createRouter({
           name: 'settings-categories',
           component: () => import('@/views/settings/CategoriesView.vue'),
         },
+        {
+          path: '/settings/budget',
+          name: 'settings-budget',
+          component: () => import('@/views/settings/BudgetView.vue'),
+        },
       ],
     },
     {
@@ -61,9 +66,18 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('accessToken')
+  const accessToken = localStorage.getItem('accessToken')
+  const expireTime = localStorage.getItem('expireTime')
+
+  // 检查 token 是否存在且未过期
+  const isAuthenticated = accessToken && expireTime && BigInt(Date.now()) < BigInt(expireTime)
+
   if (to.meta.requiresAuth && !isAuthenticated) {
+    // token 不存在或已过期，重定向到登录页
     next('/login')
+  } else if (to.path === '/login' && isAuthenticated) {
+    // 已登录用户访问登录页，重定向到首页
+    next('/')
   } else {
     next()
   }

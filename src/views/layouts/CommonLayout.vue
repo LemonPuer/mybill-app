@@ -9,7 +9,6 @@
       </router-view>
     </main>
     <BottomNav />
-    <AddBillView />
   </div>
 </template>
 
@@ -20,7 +19,6 @@ import * as billApi from '@/services/bill'
 import { getUserInfo } from '@/services/user'
 import { useDictionaryStore } from '@/stores/useCommonStore'
 import { useUserInfoStore } from '@/stores/useUserInfoStore'
-import AddBillView from '@/views/AddBillView.vue'
 import BottomNav from '@/components/BottomNav.vue'
 import HeaderView from '@/views/HeaderView.vue'
 import { ElMessage } from 'element-plus'
@@ -34,7 +32,7 @@ const RouteName: Record<string, string> = {
   home: 'AI记账',
   dashboard: '仪表盘',
   bills: '账单详情',
-  statistics:'财务统计',
+  statistics: '财务统计',
   settings: '个人设置',
 }
 
@@ -67,10 +65,8 @@ onBeforeMount(async () => {
       })
       .catch((err) => {
         console.log(err)
-        ElMessage.error('获取用户信息失败,请重新登录！')
-        localStorage.clear()
-        userInfoStore.$reset()
-        router.push('/login')
+        // 只提示用户，不自动清除登录状态
+        ElMessage.warning('获取用户信息失败，请刷新页面重试')
       })
 
     billApi.getDicInfo().then((res) => {

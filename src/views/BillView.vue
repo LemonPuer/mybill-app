@@ -1,35 +1,43 @@
 <template>
   <div class="bills-view">
-    <!-- 顶部筛选栏 -->
-    <div class="filter-bar">
-      <div class="filter-row">
-        <span class="filter-label">类型:</span>
-        <div class="filter-options">
-          <div
-            v-for="item in typeFilters"
-            :key="item.value"
-            class="filter-item"
-            :class="{ active: currentTypeFilter === item.value }"
-            @click="handleTypeFilter(item.value)"
-          >
-            {{ item.label }}
+    <!-- 顶部操作栏 -->
+    <div class="action-bar">
+      <!-- 筛选栏 -->
+      <div class="filter-bar">
+        <div class="filter-row">
+          <span class="filter-label">类型:</span>
+          <div class="filter-options">
+            <div
+              v-for="item in typeFilters"
+              :key="item.value"
+              class="filter-item"
+              :class="{ active: currentTypeFilter === item.value }"
+              @click="handleTypeFilter(item.value)"
+            >
+              {{ item.label }}
+            </div>
+          </div>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">时间:</span>
+          <div class="filter-options">
+            <div
+              v-for="item in timeFilters"
+              :key="item.value"
+              class="filter-item"
+              :class="{ active: currentTimeFilter === item.value }"
+              @click="handleTimeFilter(item.value)"
+            >
+              {{ item.label }}
+            </div>
           </div>
         </div>
       </div>
-      <div class="filter-row">
-        <span class="filter-label">时间:</span>
-        <div class="filter-options">
-          <div
-            v-for="item in timeFilters"
-            :key="item.value"
-            class="filter-item"
-            :class="{ active: currentTimeFilter === item.value }"
-            @click="handleTimeFilter(item.value)"
-          >
-            {{ item.label }}
-          </div>
-        </div>
-      </div>
+    </div>
+
+    <!-- 添加按钮 -->
+    <div class="add-btn-bar">
+      <el-button type="primary" @click="handleAdd">新增账单</el-button>
     </div>
 
     <!-- 账单列表 -->
@@ -66,8 +74,14 @@
               <button class="action-btn" title="编辑" @click="handleEdit(item)">
                 <el-icon><Edit /></el-icon>
               </button>
-              <button class="action-btn delete" title="删除" @click="handleDelete(item)">
-                <el-icon><Delete /></el-icon>
+              <button
+                class="action-btn delete"
+                title="删除"
+                :disabled="deletingIds.has(item.id)"
+                @click="handleDelete(item)"
+              >
+                <el-icon v-if="!deletingIds.has(item.id)"><Delete /></el-icon>
+                <el-icon v-else class="is-loading"><Loading /></el-icon>
               </button>
             </div>
           </div>
@@ -75,10 +89,10 @@
       </div>
     </div>
 
-    <!-- 编辑账单弹窗 -->
+    <!-- 账单弹窗 -->
     <AddBillView
       ref="addBillRef"
-      title="编辑账单"
+      :title="isEditing ? '编辑账单' : '新增账单'"
       :showType="true"
       :showCategory="true"
       @success="refreshBills"
@@ -89,7 +103,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { FolderOpened, Edit, Delete } from '@element-plus/icons-vue'
+import { FolderOpened, Edit, Delete, Loading } from '@element-plus/icons-vue'
 import * as billApi from '@/services/bill'
 import {
   getMonthRangeTimestamps,
@@ -100,6 +114,8 @@ import AddBillView from '@/views/AddBillView.vue'
 
 const loading = ref(false)
 const loadingMore = ref(false)
+const isEditing = ref(false) // 是否在编辑模式
+const deletingIds = ref<Set<number>>(new Set()) // 正在删除的账单ID集合
 const billList = ref<any[]>([])
 const currentTypeFilter = ref('all')
 const currentTimeFilter = ref('all')
@@ -227,7 +243,13 @@ const loadMore = async () => {
   }
 }
 
+const handleAdd = () => {
+  isEditing.value = false
+  addBillRef.value?.open()
+}
+
 const handleEdit = (item: any) => {
+  isEditing.value = true
   addBillRef.value?.open({
     id: item.id,
     type: item.type,
@@ -239,17 +261,29 @@ const handleEdit = (item: any) => {
 }
 
 const handleDelete = async (item: any) => {
+  // 防止重复删除
+  if (deletingIds.value.has(item.id)) return
+
   try {
     await ElMessageBox.confirm('确定要删除这条账单吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
     })
+
+    // 标记为正在删除
+    deletingIds.value.add(item.id)
+
     await billApi.deleteFinanceTransactions(item.id)
     ElMessage.success('删除成功')
     fetchBills(true)
-  } catch {
-    // 用户取消或删除失败
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      console.error('删除失败:', error)
+      ElMessage.error(error?.response?.data?.msg || '删除失败，请稍后重试')
+    }
+  } finally {
+    deletingIds.value.delete(item.id)
   }
 }
 
@@ -272,8 +306,15 @@ onMounted(() => {
   background: var(--color-bg-card);
   border-radius: var(--radius-card);
   padding: 12px 16px;
-  margin-bottom: 16px;
   box-shadow: var(--shadow-card);
+  margin-bottom: 12px;
+}
+
+/* 添加按钮栏 */
+.add-btn-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
 }
 
 .filter-row {
@@ -438,8 +479,32 @@ onMounted(() => {
   color: #fff;
 }
 
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.action-btn:disabled:hover {
+  background: var(--color-bg-input);
+  color: var(--color-text-secondary);
+}
+
 .action-btn.delete:hover {
   background: var(--color-danger);
+}
+
+/* 加载动画 */
+.is-loading {
+  animation: rotating 1s linear infinite;
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 空状态 */

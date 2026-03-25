@@ -78,7 +78,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowLeft, FolderOpened, Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { ArrowLeft, FolderOpened, Edit, Delete } from '@element-plus/icons-vue'
 import * as ElIcons from '@element-plus/icons-vue'
 import * as billApi from '@/services/bill'
 import { useCategoryStore } from '@/stores/useCategoryStore'

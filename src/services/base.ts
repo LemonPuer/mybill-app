@@ -91,7 +91,7 @@ api.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           handleLogout()
-          ElMessage.error('登录过期啦，请重新登录')
+          ElMessage.error('登录已过期，请重新登录')
           break
         default:
           ElMessage.error(error.response?.data?.msg || '请求失败，请稍后重试')

@@ -8,6 +8,9 @@ import 'element-plus/dist/index.css'
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 
+// 主题变量需要在 Element Plus 样式之后引入
+import './assets/styles/theme.css'
+
 import App from './App.vue'
 import router from './router'
 import { initTheme } from './utils/themeUtil'

@@ -1,5 +1,5 @@
-  /* Theme variables */
-@import './theme.css';
+/* Theme variables */
+/* 注意：主题变量在 main.ts 中引入，位于 Element Plus 样式之后 */
 
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
