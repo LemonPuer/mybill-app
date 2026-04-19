@@ -298,86 +298,70 @@ onMounted(() => {
 
 <style scoped>
 .bills-view {
-  padding-bottom: 20px;
+  padding: 0 4px;
 }
 
-/* 筛选栏 */
-.filter-bar {
-  background: var(--color-bg-card);
+.action-bar {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-radius: var(--radius-card);
   padding: 12px 16px;
-  box-shadow: var(--shadow-card);
   margin-bottom: 12px;
+  box-shadow: var(--shadow-card);
 }
 
-/* 添加按钮栏 */
+.filter-bar { display: flex; flex-direction: column; gap: 8px; }
+.filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.filter-label { font-size: 13px; color: var(--color-text-muted); white-space: nowrap; }
+
+.filter-options { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.filter-item {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  background: var(--glass-bg-raised);
+  border: 1px solid var(--color-border);
+  transition: all var(--motion-fast);
+}
+
+.filter-item:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+.filter-item.active {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
 .add-btn-bar {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
-.filter-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.filter-row:last-child {
-  margin-bottom: 0;
-}
-
-.filter-label {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  margin-right: 12px;
-  white-space: nowrap;
-}
-
-.filter-options {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: var(--color-bg-input);
-  border-radius: 16px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-item:hover,
-.filter-item.active {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-/* 加载状态 */
-.loading-state {
-  padding: 20px;
-}
-
-/* 账单分组 */
 .bill-group {
   margin-bottom: 16px;
 }
 
 .bill-group-header {
   font-size: 13px;
-  color: var(--color-text-secondary);
-  padding: 8px 0;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  padding: 4px 8px;
+  margin-bottom: 8px;
 }
 
 .bill-group-list {
-  background: var(--color-bg-card);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: var(--shadow-card);
@@ -386,42 +370,33 @@ onMounted(() => {
 .bill-item-with-actions {
   display: flex;
   align-items: center;
+  gap: 12px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--color-border);
-  transition: background-color 0.2s ease;
+  transition: background var(--motion-fast);
 }
 
-.bill-item-with-actions:hover {
-  background-color: var(--color-bg-input);
-}
-
-.bill-item-with-actions:last-child {
-  border-bottom: none;
-}
+.bill-item-with-actions:last-child { border-bottom: none; }
+.bill-item-with-actions:hover { background: var(--color-accent-subtle); }
 
 .bill-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
-  font-size: 18px;
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--color-expense);
   flex-shrink: 0;
 }
 
 .bill-icon.income {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
+  background: rgba(6, 214, 160, 0.1);
+  color: var(--color-income);
 }
 
-.bill-info {
-  flex: 1;
-  min-width: 0;
-}
+.bill-info { flex: 1; min-width: 0; }
 
 .bill-note {
   font-size: 14px;
@@ -434,95 +409,56 @@ onMounted(() => {
 
 .bill-date {
   font-size: 11px;
-  color: var(--color-text-disabled);
+  color: var(--color-text-muted);
   margin-top: 2px;
 }
 
 .bill-amount {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
-  margin-right: 16px;
-  min-width: 70px;
-  text-align: right;
+  white-space: nowrap;
+  margin-right: 8px;
 }
 
-.bill-amount.income {
-  color: var(--color-success);
-}
+.bill-amount.income  { color: var(--color-income); }
+.bill-amount.expense { color: var(--color-expense); }
 
-.bill-amount.expense {
-  color: var(--color-danger);
-}
-
-.bill-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
+.bill-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
 .action-btn {
   width: 32px;
   height: 32px;
   border: none;
-  background: var(--color-bg-input);
-  border-radius: 8px;
+  border-radius: var(--radius-tag);
+  background: var(--glass-bg-raised);
+  color: var(--color-text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
-  color: var(--color-text-secondary);
+  transition: all var(--motion-fast);
 }
 
-.action-btn:hover {
-  background: var(--color-primary);
-  color: #fff;
-}
+.action-btn:hover        { background: var(--color-accent-subtle); color: var(--color-accent); }
+.action-btn.delete:hover { background: rgba(220, 38, 38, 0.1);     color: var(--color-expense); }
 
-.action-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.action-btn:disabled:hover {
-  background: var(--color-bg-input);
-  color: var(--color-text-secondary);
-}
-
-.action-btn.delete:hover {
-  background: var(--color-danger);
-}
-
-/* 加载动画 */
-.is-loading {
-  animation: rotating 1s linear infinite;
-}
-
-@keyframes rotating {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* 空状态 */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 16px;
-  color: var(--color-text-secondary);
+  padding: 60px 20px;
+  color: var(--color-text-muted);
 }
 
-.empty-icon {
-  margin-bottom: 16px;
-  opacity: 0.5;
-}
+.empty-icon  { margin-bottom: 12px; color: var(--color-text-disabled); }
+.empty-text  { font-size: 14px; }
 
-.empty-text {
-  font-size: 14px;
+.loading-state { padding: 20px; }
+
+.pagination-bar {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
 }
 </style>
