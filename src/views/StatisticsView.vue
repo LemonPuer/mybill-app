@@ -106,7 +106,10 @@ const budgetList = ref([
 /* 时间切换 */
 .time-switch {
   display: flex;
-  background: var(--color-bg-input);
+  background: var(--glass-bg-raised);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: 8px;
   padding: 2px;
   width: fit-content;
@@ -122,7 +125,7 @@ const budgetList = ref([
 }
 
 .time-option.active {
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: #fff;
 }
 
@@ -150,7 +153,10 @@ const budgetList = ref([
 }
 
 .dashboard-card {
-  background: var(--color-bg-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
   padding: 16px;
   box-shadow: var(--shadow-card);
@@ -192,7 +198,7 @@ const budgetList = ref([
 .summary-item {
   text-align: center;
   padding: 12px;
-  background: var(--color-bg-input);
+  background: var(--glass-bg-raised);
   border-radius: 12px;
 }
 
@@ -246,14 +252,14 @@ const budgetList = ref([
 
 .budget-bar {
   height: 8px;
-  background: var(--color-bg-input);
+  background: var(--glass-bg-raised);
   border-radius: 4px;
   overflow: hidden;
 }
 
 .budget-progress {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary-light));
   border-radius: 4px;
   transition: width 0.3s ease;
 }
