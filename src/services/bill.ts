@@ -85,6 +85,33 @@ export const getBudgetInfo = (data: {
 }
 
 /**
+ * 获取消费分类占比
+ */
+export const consumptionStatistics = (data: { startTime: string; endTime: string }) => {
+  return api.post('/app/consumptionStatistics', {
+    data: {
+      ...data,
+    },
+  })
+}
+
+/**
+ * 获取消费趋势
+ */
+export const consumerTrends = (data: {
+  startTime: string
+  endTime: string
+  pageNum: number
+  pageSize: number
+}) => {
+  return api.post('/app/consumerTrends', {
+    data: {
+      ...data,
+    },
+  })
+}
+
+/**
  * 保存/编辑账单
  * @param data
  * @returns
