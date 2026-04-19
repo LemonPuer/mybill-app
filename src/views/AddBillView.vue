@@ -183,5 +183,29 @@ defineExpose({
 </script>
 
 <style scoped>
-/* 无需额外样式，弹窗由 Element Plus 提供 */
+:deep(.el-dialog) {
+  background: var(--glass-bg-raised) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-modal);
+}
+
+:deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: -1px 0 0 0 var(--color-accent);
+  color: #fff;
+}
+
+:deep(.el-input-number .el-input__wrapper) {
+  background: var(--color-bg-input);
+}
+
+:deep(.el-input-number__decrease),
+:deep(.el-input-number__increase) {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  border-color: var(--color-border);
+}
 </style>
