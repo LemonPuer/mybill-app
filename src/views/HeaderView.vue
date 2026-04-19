@@ -64,12 +64,14 @@ const handleCommand = (command: string) => {
 
 <style scoped>
 .header {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: white;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-card);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(20, 184, 166, 0.25);
 }
 
 .container {
@@ -87,7 +89,8 @@ const handleCommand = (command: string) => {
 
 .header-title {
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--color-text-primary);
 }
 
 .user-info {
@@ -99,27 +102,22 @@ const handleCommand = (command: string) => {
 .username {
   font-size: 14px;
   font-weight: 500;
+  color: var(--color-text-secondary);
 }
 
 .user-avatar {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
+  background-color: var(--color-accent-subtle);
+  color: var(--color-accent);
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.3s ease;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: var(--motion-base);
+  border: 2px solid var(--color-border);
 }
 
 .user-avatar:hover {
   transform: scale(1.1);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-  border-color: rgba(255, 255, 255, 0.5);
-}
-
-/* 深色模式 */
-:deep(.dark) .header {
-  background: linear-gradient(135deg, var(--color-primary-dark) 0%, #0f172a 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-accent);
+  border-color: var(--color-accent);
 }
 
 @media (max-width: 480px) {
