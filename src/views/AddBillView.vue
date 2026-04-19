@@ -185,8 +185,8 @@ defineExpose({
 <style scoped>
 :deep(.el-dialog) {
   background: var(--glass-bg-raised) !important;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-modal);
 }
