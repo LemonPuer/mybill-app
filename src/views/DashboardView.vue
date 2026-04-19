@@ -325,6 +325,7 @@ interface ConsumerTrendItem {
 }
 
 interface ConsumptionChartOption {
+  color?: string[]
   tooltip: {
     trigger: string
     formatter: string
@@ -364,6 +365,7 @@ interface ConsumptionChartOption {
 }
 
 interface TrendChartOption {
+  color?: string[]
   tooltip: {
     trigger: string
   }
