@@ -43,18 +43,20 @@ const isActive = (path: string) => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 56px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid var(--color-border);
+  height: 60px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 100;
 }
 
-:deep(.dark) .bottom-nav {
-  background: rgba(6, 78, 59, 0.9);
+.dark .bottom-nav {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .nav-item {
@@ -63,21 +65,42 @@ const isActive = (path: string) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: color var(--motion-fast);
+  position: relative;
+  padding-top: 4px;
+  height: 100%;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 24px;
+  height: 2px;
+  background: var(--color-accent);
+  border-radius: 0 0 4px 4px;
+  transition: transform var(--motion-spring);
 }
 
 .nav-item:hover {
-  color: var(--color-primary);
+  color: var(--color-accent);
 }
 
 .nav-item.active {
-  color: var(--color-primary);
+  color: var(--color-accent);
+}
+
+.nav-item.active::before {
+  transform: translateX(-50%) scaleX(1);
 }
 
 .nav-label {
   font-size: 11px;
-  margin-top: 2px;
+  margin-top: 3px;
+  font-weight: 500;
 }
 </style>
