@@ -198,7 +198,10 @@ const goBack = () => {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: var(--color-bg-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -208,7 +211,7 @@ const goBack = () => {
 }
 
 .back-btn:hover {
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: #fff;
 }
 
@@ -241,7 +244,10 @@ const goBack = () => {
 }
 
 .category-card {
-  background: var(--color-bg-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
   padding: 20px;
   box-shadow: var(--shadow-card);
@@ -255,7 +261,7 @@ const goBack = () => {
   height: 44px;
   border-radius: 12px;
   background: rgba(20, 184, 166, 0.1);
-  color: var(--color-primary);
+  color: var(--color-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -278,13 +284,13 @@ const goBack = () => {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--color-bg-input);
+  background: var(--glass-bg-raised);
   border: none;
   color: var(--color-text-secondary);
 }
 
 .category-actions .el-button:hover {
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: #fff;
 }
 
