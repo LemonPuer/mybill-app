@@ -31,34 +31,37 @@ const typeClass = computed(() => `stat-card--${props.type}`)
 
 <style scoped>
 .stat-card {
-  background: var(--color-bg-card);
+  background: var(--glass-bg-raised);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-radius: var(--radius-card);
   padding: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
   box-shadow: var(--shadow-card);
-  transition: all 0.3s ease;
+  transition: transform var(--motion-base), box-shadow var(--motion-base);
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow-button);
+  box-shadow: var(--shadow-accent);
 }
 
 .stat-card--income .stat-icon {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  background: rgba(6, 214, 160, 0.12);
+  color: var(--color-income);
 }
 
 .stat-card--expense .stat-icon {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--color-expense);
 }
 
 .stat-card--balance .stat-icon {
-  background: rgba(20, 184, 166, 0.1);
-  color: var(--color-primary);
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
 }
 
 .stat-icon {
@@ -68,7 +71,7 @@ const typeClass = computed(() => `stat-card--${props.type}`)
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg-input);
+  background: var(--glass-bg-raised);
 }
 
 .stat-label {

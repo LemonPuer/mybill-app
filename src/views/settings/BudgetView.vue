@@ -268,7 +268,7 @@ const getProgressColor = (used: number, total: number) => {
   const percent = getPercentage(used, total)
   if (percent >= 90) return '#ef4444'
   if (percent >= 70) return '#f59e0b'
-  return '#14b8a6'
+  return '#a78bfa'
 }
 
 const goBack = () => {
