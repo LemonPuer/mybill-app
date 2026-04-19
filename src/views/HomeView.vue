@@ -97,7 +97,10 @@ const handleSubmit = debounce(async (): Promise<void> => {
 }
 
 .input-container {
-  background: var(--color-bg-card);
+  background: var(--glass-bg-raised);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-radius: var(--radius-card);
   padding: 32px;
   box-shadow: var(--shadow-card);
@@ -124,7 +127,17 @@ const handleSubmit = debounce(async (): Promise<void> => {
   margin-top: 20px;
   height: 52px;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   border-radius: var(--radius-button);
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  transition: transform var(--motion-fast), box-shadow var(--motion-fast);
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-button);
 }
 </style>
