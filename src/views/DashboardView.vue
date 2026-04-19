@@ -46,203 +46,174 @@
     </div>
 
     <div class="dashboard-grid">
-      <!-- 左侧列 -->
-      <div class="grid-column">
-        <!-- 近期账单 -->
-        <el-card
-          class="dashboard-grid-card recently-bill"
-          :header-class="'recently-bill-card-header'"
-        >
-          <template #header>
-            <strong class="card-header-title">近期账单</strong>
-            <el-link class="card-header-link" @click.prevent="skipBill('/bills')" underline="never"
-              >查看全部</el-link
-            >
-          </template>
-          <div class="recentlyBill-empty-state" v-if="recentlyBillList.length === 0">
-            <div class="common-empty-state">
-              <strong>当月暂无账单</strong>
-            </div>
+      <!-- 近期账单：全宽 -->
+      <el-card
+        class="dashboard-grid-card recently-bill card-full-width"
+        :header-class="'recently-bill-card-header'"
+      >
+        <template #header>
+          <strong class="card-header-title">近期账单</strong>
+          <el-link class="card-header-link" @click.prevent="skipBill('/bills')" underline="never"
+            >查看全部</el-link
+          >
+        </template>
+        <div class="recentlyBill-empty-state" v-if="recentlyBillList.length === 0">
+          <div class="common-empty-state">
+            <strong>当月暂无账单</strong>
           </div>
-          <div class="recently-bill-list" v-else>
-            <div v-for="item in recentlyBillList" :key="item.id" class="recently-bill-item">
-              <div class="recently-bill-item-left">
-                <div class="bill-icon" :class="{ 'is-income': item.type === 1 }">
-                  <el-icon>
-                    <component :is="item.icon || 'Wallet'" />
-                  </el-icon>
-                </div>
-                <div class="bill-info">
-                  <div class="bill-category">{{ item.category || '未分类' }}</div>
-                  <div class="bill-note" v-if="item.note">{{ item.note }}</div>
-                  <div class="bill-date">{{ item.transactionDate }}</div>
-                </div>
+        </div>
+        <div class="recently-bill-list" v-else>
+          <div v-for="item in recentlyBillList" :key="item.id" class="recently-bill-item">
+            <div class="recently-bill-item-left">
+              <div class="bill-icon" :class="{ 'is-income': item.type === 1 }">
+                <el-icon>
+                  <component :is="item.icon || 'Wallet'" />
+                </el-icon>
               </div>
-              <div class="recently-bill-item-right">
-                <span class="bill-amount" :class="{ 'is-income': item.type === 1 }">
-                  {{ item.type === 1 ? '+' : '-' }}{{ item.amount }}
-                </span>
-                <div class="bill-actions">
-                  <el-button :icon="Edit" circle size="small" text @click="handleEdit(item)" />
-                  <el-button
-                    :icon="deletingIds.has(item.id) ? Loading : Delete"
-                    circle
-                    size="small"
-                    text
-                    type="danger"
-                    :disabled="deletingIds.has(item.id)"
-                    @click="handleDelete(item)"
-                  />
-                </div>
+              <div class="bill-info">
+                <div class="bill-category">{{ item.category || '未分类' }}</div>
+                <div class="bill-note" v-if="item.note">{{ item.note }}</div>
+                <div class="bill-date">{{ item.displayDate }}</div>
+              </div>
+            </div>
+            <div class="recently-bill-item-right">
+              <span class="bill-amount" :class="{ 'is-income': item.type === 1 }">
+                {{ item.type === 1 ? '+' : '-' }}{{ item.amount }}
+              </span>
+              <div class="bill-actions">
+                <el-button :icon="Edit" circle size="small" text @click="handleEdit(item)" />
+                <el-button
+                  :icon="deletingIds.has(item.id) ? Loading : Delete"
+                  circle
+                  size="small"
+                  text
+                  type="danger"
+                  :disabled="deletingIds.has(item.id)"
+                  @click="handleDelete(item)"
+                />
               </div>
             </div>
           </div>
-        </el-card>
+        </div>
+      </el-card>
 
-        <!-- 消费分类占比 -->
-        <el-card
-          class="dashboard-grid-card Consumption-pie"
-          :header-class="'recently-bill-card-header'"
-        >
-          <template #header>
-            <strong class="card-header-title">消费分类占比</strong>
-            <el-link class="card-header-link" @click.prevent="skipBill('/bills')" underline="never"
-              >查看详情</el-link
-            >
-          </template>
-          <div class="consumption-pie-chart" v-if="chartOption.series[0].data.length === 0">
-            <div class="common-empty-state">
-              <strong>本月暂无数据</strong>
+      <!-- 预算执行情况：左列 -->
+      <el-card
+        class="dashboard-grid-card budget-list-card"
+        :header-class="'recently-bill-card-header'"
+      >
+        <template #header>
+          <strong class="card-header-title">预算执行情况</strong>
+          <el-link
+            class="card-header-link"
+            @click.prevent="skipBill('/settings/budget')"
+            underline="never"
+            >查看全部</el-link
+          >
+        </template>
+        <div class="budget-list-empty-state" v-if="budgetList.length === 0">
+          <div class="common-empty-state">
+            <strong>暂未设置预算</strong>
+          </div>
+        </div>
+        <div v-else class="budget-list-content">
+          <div v-for="item in budgetList" :key="item.id" class="budget-item">
+            <div class="budget-header">
+              <span class="budget-label">{{ item.categoryName }}</span>
+              <span class="budget-value"> {{ item.spent || 0 }} / {{ item.amount }} 元 </span>
+            </div>
+            <div class="budget-bar">
+              <div
+                class="budget-progress"
+                :style="{ width: `${Math.min(((item.spent || 0) / item.amount) * 100, 100)}%` }"
+                :class="{ over: (item.spent || 0) > item.amount }"
+              ></div>
             </div>
           </div>
-          <div class="consumption-pie-chart" v-else>
-            <v-chart :option="chartOption" />
-          </div>
-        </el-card>
+        </div>
+      </el-card>
 
-        <!-- 财务目标 -->
-        <el-card
-          class="dashboard-grid-card Financial-list-card"
-          :header-class="'recently-bill-card-header'"
-        >
-          <template #header>
-            <strong class="card-header-title">财务目标</strong>
-            <el-link
-              class="card-header-link"
-              @click.prevent="skipBill('/settings/budget')"
-              underline="never"
-              >管理目标</el-link
-            >
-          </template>
-          <div class="consumption-pie-chart" v-if="financialObjectives.length === 0">
-            <div class="common-empty-state">
-              <strong>暂未设置目标</strong>
-            </div>
+      <!-- 消费分类占比：右列 -->
+      <el-card
+        class="dashboard-grid-card Consumption-pie"
+        :header-class="'recently-bill-card-header'"
+      >
+        <template #header>
+          <strong class="card-header-title">消费分类占比</strong>
+          <el-link class="card-header-link" @click.prevent="skipBill('/statistics')" underline="never"
+            >查看详情</el-link
+          >
+        </template>
+        <div class="consumption-pie-chart" v-if="chartOption.series[0].data.length === 0">
+          <div class="common-empty-state">
+            <strong>本月暂无数据</strong>
           </div>
-          <div class="consumption-pie-chart" v-else>
-            <!-- todo: 财务目标 -->
-            <ol>
-              <li v-for="(item, index) in financialObjectives" :key="index">
-                <el-card shadow="never">
-                  <div class="card-content">
-                    <div class="card-title">
-                      <div class="card-icon">
-                        <img :src="item.icon" alt="" />
-                      </div>
-                      <div class="card-text">
-                        <div class="card-text-title">{{ item.objective }}</div>
-                      </div>
-                    </div>
-                  </div>
-                </el-card>
-              </li>
-            </ol>
+        </div>
+        <div class="consumption-pie-chart" v-else>
+          <v-chart :option="chartOption" />
+        </div>
+      </el-card>
+
+      <!-- 消费趋势：全宽 -->
+      <el-card
+        class="dashboard-grid-card trend-card card-full-width"
+        :header-class="'recently-bill-card-header'"
+      >
+        <template #header>
+          <strong class="card-header-title">消费趋势</strong>
+        </template>
+        <div class="consumption-trend-chart" v-if="trendChartOption.xAxis.data.length === 0">
+          <div class="common-empty-state">
+            <strong>暂无趋势数据</strong>
           </div>
-        </el-card>
-      </div>
-      <!-- 右侧列 -->
-      <div class="grid-column">
-        <!-- 预算执行情况 -->
-        <el-card
-          class="dashboard-grid-card budget-list-card"
-          :header-class="'recently-bill-card-header'"
-        >
-          <template #header>
-            <strong class="card-header-title">预算执行情况</strong>
-            <el-link
-              class="card-header-link"
-              @click.prevent="skipBill('/settings/budget')"
-              underline="never"
-              >查看全部</el-link
-            >
-          </template>
-          <div class="budget-list-empty-state" v-if="budgetList.length === 0">
-            <div class="common-empty-state">
-              <strong>暂未设置预算</strong>
-            </div>
-          </div>
-          <div v-else class="budget-list-content">
-            <div v-for="item in budgetList" :key="item.id" class="budget-item">
-              <div class="budget-header">
-                <span class="budget-label">{{ item.categoryName }}</span>
-                <span class="budget-value"> {{ item.spent || 0 }} / {{ item.amount }} 元 </span>
+        </div>
+        <div class="consumption-trend-chart" v-else>
+          <v-chart :option="trendChartOption" />
+        </div>
+      </el-card>
+
+      <!-- 类型管理：全宽 -->
+      <el-card
+        class="dashboard-grid-card category-list-card card-full-width"
+        :header-class="'recently-bill-card-header'"
+      >
+        <template #header>
+          <strong class="card-header-title">类型管理</strong>
+          <el-link
+            class="card-header-link"
+            @click.prevent="skipBill('/settings/categories')"
+            underline="never"
+            >管理分类</el-link
+          >
+        </template>
+        <div>
+          <ol class="category-list-state">
+            <li v-for="item in categoryList" :key="item.id">
+              <div class="button-with-text">
+                <el-button
+                  :icon="item.icon"
+                  circle
+                  size="large"
+                  @click="openCategoryDialog(true, item)"
+                />
+                <span>{{ item.category }}</span>
               </div>
-              <div class="budget-bar">
-                <div
-                  class="budget-progress"
-                  :style="{ width: `${Math.min(((item.spent || 0) / item.amount) * 100, 100)}%` }"
-                  :class="{ over: (item.spent || 0) > item.amount }"
-                ></div>
+            </li>
+            <li>
+              <div class="button-with-text">
+                <el-button
+                  :icon="ElIcons.Plus"
+                  type="primary"
+                  circle
+                  size="large"
+                  @click="openCategoryDialog(false, null)"
+                />
+                <span>新增</span>
               </div>
-            </div>
-          </div>
-        </el-card>
-
-        <!-- 类型管理 -->
-        <el-card
-          class="dashboard-grid-card category-list-card"
-          :header-class="'recently-bill-card-header'"
-        >
-          <template #header>
-            <strong class="card-header-title">类型管理</strong>
-            <el-link
-              class="card-header-link"
-              @click.prevent="skipBill('/settings/budget')"
-              underline="never"
-              >查看全部</el-link
-            >
-          </template>
-          <div>
-            <ol class="category-list-state">
-              <li v-for="item in categoryList" :key="item.id">
-                <div class="button-with-text">
-                  <el-button
-                    :icon="item.icon"
-                    circle
-                    size="large"
-                    @click="openCategoryDialog(true, item)"
-                  />
-                  <span>{{ item.category }}</span>
-                </div>
-              </li>
-              <li>
-                <div class="button-with-text">
-                  <el-button
-                    :icon="ElIcons.Plus"
-                    type="primary"
-                    circle
-                    size="large"
-                    @click="openCategoryDialog(false, null)"
-                  />
-                  <span>更多</span>
-                </div>
-              </li>
-            </ol>
-          </div>
-        </el-card>
-
-        <!-- 消费趋势 -->
-      </div>
+            </li>
+          </ol>
+        </div>
+      </el-card>
     </div>
 
     <!-- 新增/编辑分类弹窗 -->
@@ -311,7 +282,7 @@ import { onMounted, reactive, ref } from 'vue'
 import VChart from 'vue-echarts'
 import AddBillView from '@/views/AddBillView.vue'
 // 引入需要的图表类型
-import { BarChart, PieChart } from 'echarts/charts'
+import { BarChart, LineChart, PieChart } from 'echarts/charts'
 // 引入必要的组件（如 tooltip、legend 等）
 import {
   GridComponent,
@@ -324,7 +295,6 @@ import { CanvasRenderer } from 'echarts/renderers'
 // 局部注册需要的图表类型
 import Category from '@/models/Category'
 import type FinanceTransactions from '@/models/FinanceTransactions'
-import type FinancialObjectives from '@/models/FinancialObjectives'
 import { use } from 'echarts/core'
 
 use([
@@ -333,9 +303,103 @@ use([
   LegendComponent,
   GridComponent,
   BarChart,
+  LineChart,
   PieChart,
   CanvasRenderer,
 ])
+
+interface DashboardBillItem extends FinanceTransactions {
+  displayDate: string
+}
+
+interface ConsumptionStatisticItem {
+  category: string
+  consumption: number
+}
+
+interface ConsumerTrendItem {
+  month: string
+  totalIncome: number
+  totalExpense: number
+  totalBalance: number
+}
+
+interface ConsumptionChartOption {
+  tooltip: {
+    trigger: string
+    formatter: string
+  }
+  legend: {
+    orient: string
+    right: string
+    top: string
+    data: Array<string>
+  }
+  series: [
+    {
+      name: string
+      type: string
+      radius: string
+      center: Array<string>
+      avoidLabelOverlap: boolean
+      label: {
+        show: boolean
+      }
+      labelLine: {
+        show: boolean
+      }
+      data: Array<{
+        value: number
+        name: string
+      }>
+      emphasis: {
+        itemStyle: {
+          shadowBlur: number
+          shadowOffsetX: number
+          shadowColor: string
+        }
+      }
+    },
+  ]
+}
+
+interface TrendChartOption {
+  tooltip: {
+    trigger: string
+  }
+  legend: {
+    top: number
+    data: Array<string>
+  }
+  grid: {
+    left: string
+    right: string
+    bottom: string
+    containLabel: boolean
+  }
+  xAxis: {
+    type: string
+    data: Array<string>
+  }
+  yAxis: {
+    type: string
+  }
+  series: Array<{
+    name: string
+    type: string
+    smooth: boolean
+    data: Array<number>
+  }>
+}
+
+interface RawBudgetItem {
+  id?: number
+  category?: string
+  categoryName?: string
+  amount?: number | string
+  cost?: number | string
+  spent?: number | string
+}
 
 // 控制弹窗显示
 const showCategoryDialog = ref(false)
@@ -379,9 +443,9 @@ const overviewData: {
   },
 })
 
-const recentlyBillList = ref<Array<FinanceTransactions>>([])
+const recentlyBillList = ref<Array<DashboardBillItem>>([])
 
-const chartOption = ref({
+const chartOption = ref<ConsumptionChartOption>({
   tooltip: {
     trigger: 'item',
     formatter: '{a}<br/>{b}: {c}元 ({d}%)',
@@ -390,7 +454,7 @@ const chartOption = ref({
     orient: 'vertical',
     right: '5%',
     top: 'center',
-    data: ['餐饮', '交通', '购物', '娱乐', '其他'],
+    data: [],
   },
   series: [
     {
@@ -405,13 +469,7 @@ const chartOption = ref({
       labelLine: {
         show: false,
       },
-      data: [
-        { value: 1048, name: '餐饮' },
-        { value: 732, name: '交通' },
-        { value: 530, name: '购物' },
-        { value: 310, name: '娱乐' },
-        { value: 274, name: '其他' },
-      ],
+      data: [],
       emphasis: {
         itemStyle: {
           shadowBlur: 10,
@@ -419,6 +477,49 @@ const chartOption = ref({
           shadowColor: 'rgba(0, 0, 0, 0.5)',
         },
       },
+    },
+  ],
+})
+
+const trendChartOption = ref<TrendChartOption>({
+  tooltip: {
+    trigger: 'axis',
+  },
+  legend: {
+    top: 0,
+    data: ['收入', '支出', '结余'],
+  },
+  grid: {
+    left: '3%',
+    right: '4%',
+    bottom: '3%',
+    containLabel: true,
+  },
+  xAxis: {
+    type: 'category',
+    data: [] as Array<string>,
+  },
+  yAxis: {
+    type: 'value',
+  },
+  series: [
+    {
+      name: '收入',
+      type: 'line',
+      smooth: true,
+      data: [] as Array<number>,
+    },
+    {
+      name: '支出',
+      type: 'line',
+      smooth: true,
+      data: [] as Array<number>,
+    },
+    {
+      name: '结余',
+      type: 'line',
+      smooth: true,
+      data: [] as Array<number>,
     },
   ],
 })
@@ -440,12 +541,9 @@ const isEditCategory = ref(false)
 const categoryFormRef = ref<FormInstance>()
 const category = ref(new Category('', '', 0))
 
-const financialObjectives = ref<Array<FinancialObjectives>>([])
-
 // 预算列表
 interface BudgetItem {
-  id: number
-  categoryId: number
+  id?: number
   categoryName: string
   amount: number
   spent: number
@@ -454,6 +552,60 @@ const budgetList = ref<Array<BudgetItem>>([])
 
 const addBillRef = ref()
 const deletingIds = ref<Set<number | undefined>>(new Set()) // 正在删除的账单ID集合
+
+const mapRecentlyBillList = (items: Array<FinanceTransactions>) => {
+  return items.map((item) => ({
+    ...item,
+    displayDate: formatFriendlyTime(item.transactionDate),
+  }))
+}
+
+const applyConsumptionChartData = (items: Array<ConsumptionStatisticItem>) => {
+  chartOption.value.legend.data = items.map((item) => item.category || '未分类')
+  chartOption.value.series[0].data = items.map((item) => ({
+    value: item.consumption,
+    name: item.category || '未分类',
+  }))
+}
+
+const resetConsumptionChartData = () => {
+  chartOption.value.legend.data = []
+  chartOption.value.series[0].data = []
+}
+
+const applyTrendChartData = (items: Array<ConsumerTrendItem>) => {
+  const sortedItems = [...items].sort((a, b) => a.month.localeCompare(b.month))
+  trendChartOption.value.xAxis.data = sortedItems.map((item) => item.month)
+  trendChartOption.value.series[0].data = sortedItems.map((item) => item.totalIncome)
+  trendChartOption.value.series[1].data = sortedItems.map((item) => item.totalExpense)
+  trendChartOption.value.series[2].data = sortedItems.map((item) => item.totalBalance)
+}
+
+const resetTrendChartData = () => {
+  trendChartOption.value.xAxis.data = []
+  trendChartOption.value.series[0].data = []
+  trendChartOption.value.series[1].data = []
+  trendChartOption.value.series[2].data = []
+}
+
+const mapBudgetItem = (item: RawBudgetItem): BudgetItem => ({
+  id: item.id,
+  categoryName: item.categoryName || item.category || '未分类',
+  amount: Number(item.amount || 0),
+  spent: Number(item.spent || item.cost || 0),
+})
+
+const getRecentMonthRange = (monthCount: number) => {
+  const endDate = new Date()
+  const startDate = new Date(endDate)
+  startDate.setMonth(startDate.getMonth() - (monthCount - 1), 1)
+  startDate.setHours(0, 0, 0, 0)
+
+  return {
+    startTime: startDate.getTime().toString(),
+    endTime: endDate.getTime().toString(),
+  }
+}
 
 const handleEdit = (item: FinanceTransactions) => {
   addBillRef.value.open({
@@ -478,9 +630,9 @@ const handleDelete = (item: FinanceTransactions) => {
       ElMessage.success('删除成功')
       refreshRecentlyBill()
     })
-    .catch((error: any) => {
+    .catch((error: unknown) => {
       console.error('删除失败:', error)
-      ElMessage.error(error?.response?.data?.msg || '删除失败，请稍后重试')
+      ElMessage.error('删除失败，请稍后重试')
     })
     .finally(() => {
       deletingIds.value.delete(item.id)
@@ -500,10 +652,7 @@ const refreshRecentlyBill = () => {
       pageSize: 3,
     })
     .then((res) => {
-      recentlyBillList.value = res.data.data.result
-      recentlyBillList.value.forEach((item) => {
-        item.transactionDate = formatFriendlyTime(item.transactionDate)
-      })
+      recentlyBillList.value = mapRecentlyBillList(res.data.data.result || [])
     })
 }
 
@@ -553,13 +702,13 @@ onMounted(() => {
     text: '加载中...',
     background: 'rgba(0, 0, 0, 0.5)',
   })
-  try {
-    const { monthStart, monthEnd } = getMonthRangeTimestamps() as {
-      monthStart: string
-      monthEnd: string
-    }
-    // 获取渲染数据
-    // 顶部数据概览
+  const { monthStart, monthEnd } = getMonthRangeTimestamps() as {
+    monthStart: string
+    monthEnd: string
+  }
+  const { startTime: trendStart, endTime: trendEnd } = getRecentMonthRange(6)
+
+  Promise.allSettled([
     billApi.getCashFlowCard({ startTime: monthStart, endTime: monthEnd }).then((res) => {
       const dataList = res.data.data as Array<{
         amount: number
@@ -582,9 +731,7 @@ onMounted(() => {
           overviewData.balance.ratioType = item.ratioType
         }
       })
-    })
-
-    // 近期账单
+    }),
     billApi
       .getFinanceTransactionsList({
         startTime: monthStart,
@@ -593,43 +740,53 @@ onMounted(() => {
         pageSize: 3,
       })
       .then((res) => {
-        recentlyBillList.value = res.data.data.result
-        recentlyBillList.value.forEach((item) => {
-          item.transactionDate = formatFriendlyTime(item.transactionDate)
-        })
+        recentlyBillList.value = mapRecentlyBillList(res.data.data.result || [])
       })
-
-    //预算执行情况
+      .catch((error) => {
+        console.error('获取近期账单失败:', error)
+        recentlyBillList.value = []
+      }),
     billApi
       .getBudgetInfo({ startTime: monthStart, endTime: monthEnd, pageNum: 1, pageSize: 3 })
       .then((res) => {
-        console.log('预算数据:', res.data.data)
-        budgetList.value = res.data.data.result || []
+        budgetList.value = ((res.data.data as Array<RawBudgetItem>) || []).map(mapBudgetItem)
       })
-      .catch((err) => {
-        console.error('获取预算失败:', err)
+      .catch((error) => {
+        console.error('获取预算失败:', error)
+        budgetList.value = []
+      }),
+    billApi
+      .consumptionStatistics({ startTime: monthStart, endTime: monthEnd })
+      .then((res) => {
+        applyConsumptionChartData((res.data.data as Array<ConsumptionStatisticItem>) || [])
       })
-
-    //消费分类占比
-
-    //类型管理
-    flashCategory()
-
-    //财务目标
-    billApi.financialObjectives({ pageNum: 1, pageSize: 2 }).then((res) => {
-      financialObjectives.value = res.data.data.result
-    })
-  } catch (error) {
-    console.error('API 请求失败:', error)
-    ElMessage.error('数据加载失败，请重试')
-  } finally {
+      .catch((error) => {
+        console.error('获取消费分类占比失败:', error)
+        resetConsumptionChartData()
+      }),
+    billApi
+      .consumerTrends({
+        startTime: trendStart,
+        endTime: trendEnd,
+        pageNum: 1,
+        pageSize: 6,
+      })
+      .then((res) => {
+        applyTrendChartData(res.data.data.result || [])
+      })
+      .catch((error) => {
+        console.error('获取消费趋势失败:', error)
+        resetTrendChartData()
+      }),
+    flashCategory(),
+  ]).finally(() => {
     loadingInstance.close()
-  }
+  })
 })
 
-//刷新分类
+//刷新分类（全宽卡片展示更多分类，pageSize 增大到 8）
 const flashCategory = () => {
-  billApi.getCategory({ pageNum: 1, pageSize: 4 }).then((res) => {
+  return billApi.getCategory({ pageNum: 1, pageSize: 8 }).then((res) => {
     categoryList.value = res.data.data.result
   })
 }
@@ -684,10 +841,9 @@ const flashCategory = () => {
   margin-bottom: 20px;
 }
 
-.grid-column {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+/* 全宽卡片横跨两列 */
+.card-full-width {
+  grid-column: span 2;
 }
 
 .common-empty-state {
@@ -762,8 +918,9 @@ const flashCategory = () => {
 
 .category-list-state {
   display: flex;
-  height: 60px;
+  flex-wrap: wrap;
   gap: 10px;
+  padding: 4px 0;
 }
 
 .category-list-state li {
@@ -786,6 +943,11 @@ const flashCategory = () => {
 .consumption-pie-chart {
   display: flex;
   height: 180px;
+}
+
+.consumption-trend-chart {
+  display: flex;
+  height: 220px;
 }
 
 .card-header-title {
@@ -827,9 +989,14 @@ const flashCategory = () => {
   height: 180px;
 }
 
+:deep(.trend-card .el-card__body) {
+  padding: 0px;
+  height: 220px;
+}
+
 :deep(.category-list-card .el-card__body) {
-  padding: 0px 10px 10px 10px;
-  height: 70px;
+  padding: 10px 12px 12px 12px;
+  height: auto;
 }
 
 :deep(.stat-card .el-card__body) {
@@ -1039,16 +1206,16 @@ const flashCategory = () => {
   color: #fff;
 }
 
-/* 响应式 */
+/* 响应式 - 平板 */
 @media (max-width: 768px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
 
-  .stats-overview {
-    grid-template-columns: 1fr;
-    gap: 12px;
+  /* 移动端所有卡片都是单列，取消全宽 span */
+  .card-full-width {
+    grid-column: span 1;
   }
 
   .stat-card {
@@ -1087,21 +1254,35 @@ const flashCategory = () => {
     height: 28px;
   }
 
-  .category-list-state {
-    flex-wrap: wrap;
-    height: auto;
-    justify-content: flex-start;
-  }
-
   .consumption-pie-chart {
     height: 160px;
+  }
+
+  .consumption-trend-chart {
+    height: 180px;
   }
 
   :deep(.recently-bill .el-card__body),
   :deep(.budget-list-card .el-card__body),
   :deep(.Consumption-pie .el-card__body),
-  :deep(.category-list-card .el-card__body) {
+  :deep(.trend-card .el-card__body) {
     height: auto;
+  }
+}
+
+/* 响应式 - 手机 */
+@media (max-width: 480px) {
+  .stats-overview {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px 16px;
+  }
+
+  .stat-value {
+    font-size: 16px;
   }
 }
 </style>
