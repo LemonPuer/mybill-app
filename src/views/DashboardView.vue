@@ -446,6 +446,7 @@ const overviewData: {
 const recentlyBillList = ref<Array<DashboardBillItem>>([])
 
 const chartOption = ref<ConsumptionChartOption>({
+  color: ['#d8b4fe', '#a78bfa', '#6ee7b7', '#fca5a5', '#fcd34d', '#93c5fd'],
   tooltip: {
     trigger: 'item',
     formatter: '{a}<br/>{b}: {c}元 ({d}%)',
@@ -482,6 +483,7 @@ const chartOption = ref<ConsumptionChartOption>({
 })
 
 const trendChartOption = ref<TrendChartOption>({
+  color: ['#6ee7b7', '#fca5a5', '#d8b4fe'],
   tooltip: {
     trigger: 'axis',
   },
@@ -793,15 +795,15 @@ const flashCategory = () => {
 </script>
 
 <style>
-/* 近期账单 */
 .recently-bill-card-header {
   padding: 10px;
   display: flex;
-  border: 0cap;
+  border: 0;
 }
 </style>
 
 <style scoped>
+/* 图标选择 */
 .icon-list {
   display: flex;
   gap: 10px;
@@ -813,15 +815,16 @@ const flashCategory = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  background-color: var(--color-bg-input);
-  transition: all 0.3s ease;
-  margin: 0px 0px 10px 0px;
+  border-radius: var(--radius-tag);
+  background: var(--color-accent-subtle);
+  transition: background var(--motion-fast);
+  margin: 0 0 10px 0;
 }
 
 .icon-item:hover,
 .icon-item.is-active {
-  background-color: var(--color-primary-light);
+  background: var(--color-accent);
+  color: #fff;
 }
 
 .icon-item .el-icon {
@@ -833,25 +836,35 @@ const flashCategory = () => {
   font-size: 20px;
 }
 
-/* 网格布局 */
+/* 仪表盘网格 */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 16px;
   margin-bottom: 20px;
 }
 
-/* 全宽卡片横跨两列 */
 .card-full-width {
   grid-column: span 2;
 }
 
+/* 玻璃卡片 */
+.dashboard-grid-card {
+  border-radius: var(--radius-card);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--shadow-card);
+}
+
+/* 空状态 */
 .common-empty-state {
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
   flex: 1;
 }
 
@@ -865,20 +878,204 @@ const flashCategory = () => {
   height: 200px;
 }
 
-.budget-list-content {
-  padding: 4px 0;
+/* 卡片标题 */
+.card-header-title {
+  flex: 70%;
+  text-align: left;
+  padding: 0 10px;
+  color: var(--color-text-primary);
+  font-weight: 600;
 }
+
+.card-header-link {
+  flex: auto;
+  text-align: center;
+  color: var(--color-accent);
+  background: transparent;
+  font-size: 13px;
+}
+
+.card-header-link:hover {
+  opacity: 0.75;
+}
+
+/* 统计概览 */
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--glass-bg-raised);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius-card);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-card);
+  transition: transform var(--motion-base), box-shadow var(--motion-base);
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-accent);
+}
+
+.stat-card.income-card  { border-left: 3px solid var(--color-income); }
+.stat-card.expense-card { border-left: 3px solid var(--color-expense); }
+.stat-card.balance-card { border-left: 3px solid var(--color-accent); }
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.income-card  .stat-icon { background: rgba(6, 214, 160, 0.12); color: var(--color-income); }
+.expense-card .stat-icon { background: rgba(220, 38, 38, 0.1);  color: var(--color-expense); }
+.balance-card .stat-icon { background: var(--color-accent-subtle); color: var(--color-accent); }
+
+.stat-info { flex: 1; min-width: 0; }
+
+.stat-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 近期账单列表 */
+.recently-bill-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.recently-bill-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 8px;
+  border-radius: 12px;
+  transition: background var(--motion-fast);
+}
+
+.recently-bill-item:hover {
+  background: var(--color-accent-subtle);
+}
+
+.recently-bill-item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.bill-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--color-expense);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.bill-icon.is-income {
+  background: rgba(6, 214, 160, 0.1);
+  color: var(--color-income);
+}
+
+.bill-info { display: flex; flex-direction: column; min-width: 0; }
+
+.bill-category {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bill-note {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bill-date {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.recently-bill-item-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.bill-amount {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-expense);
+  min-width: 70px;
+  text-align: right;
+}
+
+.bill-amount.is-income { color: var(--color-income); }
+
+.bill-actions { display: flex; gap: 8px; }
+
+.bill-actions .el-button {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-tag);
+  background: var(--color-accent-subtle);
+  border: none;
+}
+
+.bill-actions .el-button:hover {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+/* 预算 */
+.budget-list-content { padding: 4px 0; }
 
 .budget-item {
   margin-bottom: 14px;
   padding: 10px;
-  background: var(--color-bg-input);
+  background: var(--glass-bg-raised);
+  border: 1px solid var(--glass-border);
   border-radius: 12px;
 }
 
-.budget-item:last-child {
-  margin-bottom: 0;
-}
+.budget-item:last-child { margin-bottom: 0; }
 
 .budget-header {
   display: flex;
@@ -899,7 +1096,7 @@ const flashCategory = () => {
 }
 
 .budget-bar {
-  height: 8px;
+  height: 6px;
   background: var(--color-border);
   border-radius: 4px;
   overflow: hidden;
@@ -907,15 +1104,16 @@ const flashCategory = () => {
 
 .budget-progress {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong));
   border-radius: 4px;
-  transition: width 0.3s ease;
+  transition: width var(--motion-slow);
 }
 
 .budget-progress.over {
-  background: linear-gradient(90deg, var(--color-danger), #f87171);
+  background: linear-gradient(90deg, var(--color-expense), #f87171);
 }
 
+/* 分类管理 */
 .category-list-state {
   display: flex;
   flex-wrap: wrap;
@@ -938,8 +1136,10 @@ const flashCategory = () => {
 .button-with-text span {
   margin-top: 5px;
   font-size: 12px;
+  color: var(--color-text-secondary);
 }
 
+/* 图表容器 */
 .consumption-pie-chart {
   display: flex;
   height: 180px;
@@ -950,30 +1150,9 @@ const flashCategory = () => {
   height: 220px;
 }
 
-.card-header-title {
-  flex: 70%;
-  text-align: left;
-  padding: 0px 10px;
-}
-
-.card-header-link {
-  flex: auto;
-  text-align: center;
-  color: var(--color-primary);
-  background-color: transparent;
-}
-
-.card-header-link:hover {
-  opacity: 0.7;
-}
-
-.dashboard-grid-card {
-  border-radius: var(--radius-card);
-  background: var(--color-bg-card);
-}
-
+/* Deep: el-card body padding */
 :deep(.recently-bill .el-card__body) {
-  padding: 0px 10px 10px 10px;
+  padding: 0 10px 10px;
   height: 260px;
 }
 
@@ -985,282 +1164,40 @@ const flashCategory = () => {
 }
 
 :deep(.Consumption-pie .el-card__body) {
-  padding: 0px;
+  padding: 0;
   height: 180px;
 }
 
 :deep(.trend-card .el-card__body) {
-  padding: 0px;
+  padding: 0;
   height: 220px;
 }
 
 :deep(.category-list-card .el-card__body) {
-  padding: 10px 12px 12px 12px;
+  padding: 10px 12px 12px;
   height: auto;
 }
 
-:deep(.stat-card .el-card__body) {
-  padding: 0px;
-  display: flex;
-  width: 150px;
-  height: 45px;
-}
-
-/* 顶部数据概览 */
-.stats-overview {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-/* 统计卡片基础样式 */
-.stat-card {
-  background: var(--color-bg-card);
-  border-radius: var(--radius-card);
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: var(--shadow-card);
-  border-left: 4px solid transparent;
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-button);
-}
-
-/* 收入卡片 */
-.stat-card.income-card {
-  border-left-color: var(--color-success);
-}
-
-.stat-card.income-card .stat-icon {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
-}
-
-/* 支出卡片 */
-.stat-card.expense-card {
-  border-left-color: var(--color-danger);
-}
-
-.stat-card.expense-card .stat-icon {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
-}
-
-/* 结余卡片 */
-.stat-card.balance-card {
-  border-left-color: var(--color-primary);
-}
-
-.stat-card.balance-card .stat-icon {
-  background: rgba(20, 184, 166, 0.1);
-  color: var(--color-primary);
-}
-
-/* 图标 */
-.stat-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* 文字信息 */
-.stat-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin-bottom: 4px;
-}
-
-.stat-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 近期账单列表 */
-.recently-bill-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.recently-bill-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 8px;
-  border-radius: 12px;
-  transition: background-color 0.2s ease;
-}
-
-.recently-bill-item:hover {
-  background-color: var(--color-bg-input);
-}
-
-.recently-bill-item-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
-}
-
-.bill-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-.bill-icon.is-income {
-  background: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
-}
-
-.bill-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.bill-category {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.bill-note {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.bill-date {
-  font-size: 11px;
-  color: var(--color-text-disabled);
-  margin-top: 2px;
-}
-
-.recently-bill-item-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-shrink: 0;
-}
-
-.bill-amount {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--color-danger);
-  min-width: 70px;
-  text-align: right;
-}
-
-.bill-amount.is-income {
-  color: var(--color-success);
-}
-
-.bill-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.bill-actions .el-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: var(--color-bg-input);
-  border: none;
-}
-
-.bill-actions .el-button:hover {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-/* 响应式 - 平板 */
+/* 响应式 */
 @media (max-width: 768px) {
   .dashboard-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
   }
 
-  /* 移动端所有卡片都是单列，取消全宽 span */
-  .card-full-width {
-    grid-column: span 1;
-  }
+  .card-full-width { grid-column: span 1; }
+  .stat-card       { padding: 14px; }
+  .stat-value      { font-size: 14px; }
 
-  .stat-card {
-    padding: 14px;
-  }
+  .recently-bill-item       { padding: 10px 4px; }
+  .recently-bill-item-left  { gap: 10px; }
+  .bill-icon                { width: 36px; height: 36px; font-size: 16px; }
+  .recently-bill-item-right { gap: 10px; }
+  .bill-amount              { font-size: 15px; min-width: 60px; }
 
-  .stat-value {
-    font-size: 14px;
-  }
-
-  .recently-bill-item {
-    padding: 10px 4px;
-  }
-
-  .recently-bill-item-left {
-    gap: 10px;
-  }
-
-  .bill-icon {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-  }
-
-  .recently-bill-item-right {
-    gap: 10px;
-  }
-
-  .bill-amount {
-    font-size: 15px;
-    min-width: 60px;
-  }
-
-  .bill-actions .el-button {
-    width: 28px;
-    height: 28px;
-  }
-
-  .consumption-pie-chart {
-    height: 160px;
-  }
-
-  .consumption-trend-chart {
-    height: 180px;
-  }
+  .bill-actions .el-button  { width: 28px; height: 28px; }
+  .consumption-pie-chart    { height: 160px; }
+  .consumption-trend-chart  { height: 180px; }
 
   :deep(.recently-bill .el-card__body),
   :deep(.budget-list-card .el-card__body),
@@ -1270,19 +1207,9 @@ const flashCategory = () => {
   }
 }
 
-/* 响应式 - 手机 */
 @media (max-width: 480px) {
-  .stats-overview {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .stat-card {
-    padding: 14px 16px;
-  }
-
-  .stat-value {
-    font-size: 16px;
-  }
+  .stats-overview { grid-template-columns: 1fr; gap: 10px; }
+  .stat-card      { padding: 14px 16px; }
+  .stat-value     { font-size: 16px; }
 }
 </style>
