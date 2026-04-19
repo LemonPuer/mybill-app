@@ -64,8 +64,8 @@
   background: var(--glass-bg-raised);
   border-radius: var(--radius-modal);
   box-shadow: var(--shadow-modal);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   position: relative;
   z-index: 1;
   border: 1px solid var(--glass-border);
@@ -250,7 +250,7 @@
   background: var(--color-bg-input);
   border-color: var(--color-border);
   color: var(--color-text-secondary);
-  transition: var(--motion-fast);
+  transition: border-color var(--motion-fast), color var(--motion-fast);
 }
 
 .verification-code .el-button:hover {
