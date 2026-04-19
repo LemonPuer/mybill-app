@@ -297,7 +297,10 @@ onMounted(() => {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: var(--color-bg-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -307,7 +310,7 @@ onMounted(() => {
 }
 
 .back-btn:hover {
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: #fff;
 }
 
@@ -328,7 +331,10 @@ onMounted(() => {
 }
 
 .filter-bar {
-  background: var(--color-bg-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
   padding: 12px 16px;
   margin-bottom: 16px;
@@ -340,7 +346,7 @@ onMounted(() => {
 
 .filter-item {
   padding: 6px 12px;
-  background: var(--color-bg-input);
+  background: var(--glass-bg-raised);
   border-radius: 16px;
   font-size: 13px;
   color: var(--color-text-secondary);
@@ -350,7 +356,7 @@ onMounted(() => {
 }
 
 .filter-item.active {
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: #fff;
 }
 
@@ -361,7 +367,10 @@ onMounted(() => {
 }
 
 .budget-card {
-  background: var(--color-bg-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
   padding: 16px;
   box-shadow: var(--shadow-card);
@@ -388,7 +397,7 @@ onMounted(() => {
   height: 32px;
   border-radius: 8px;
   background: rgba(20, 184, 166, 0.1);
-  color: var(--color-primary);
+  color: var(--color-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -430,13 +439,13 @@ onMounted(() => {
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  background: var(--color-bg-input);
+  background: var(--glass-bg-raised);
   border: none;
   color: var(--color-text-secondary);
 }
 
 .budget-actions .el-button:hover {
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: #fff;
 }
 
