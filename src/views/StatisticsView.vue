@@ -259,7 +259,7 @@ const budgetList = ref([
 
 .budget-progress {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-primary-light));
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong));
   border-radius: 4px;
   transition: width 0.3s ease;
 }
