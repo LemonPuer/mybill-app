@@ -83,6 +83,10 @@ a,
 /* ========================================
    深色模式 — Element Plus 组件覆盖
    ======================================== */
+html.dark {
+  background-color: #12062b;
+}
+
 .dark {
   --el-bg-color:              var(--color-bg-card);
   --el-bg-color-overlay:      var(--color-bg-card);

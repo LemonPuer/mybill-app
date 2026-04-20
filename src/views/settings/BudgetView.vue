@@ -158,7 +158,7 @@ const fetchBudgets = async () => {
   try {
     const params = getDateParams()
     const res = await billApi.getBudgetInfo(params)
-    budgetList.value = res.data.data.result || []
+    budgetList.value = res.data.data || []
   } finally {
     loading.value = false
   }
