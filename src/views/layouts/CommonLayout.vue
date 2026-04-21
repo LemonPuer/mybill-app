@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 import type SimpleEnum from '@/models/SimpleEnum'
-import router from '@/router'
 import * as billApi from '@/services/bill'
 import { getUserInfo } from '@/services/user'
 import { useDictionaryStore } from '@/stores/useCommonStore'
@@ -32,7 +31,6 @@ const RouteName: Record<string, string> = {
   home: 'AI记账',
   dashboard: '仪表盘',
   bills: '账单详情',
-  statistics: '财务统计',
   settings: '个人设置',
 }
 

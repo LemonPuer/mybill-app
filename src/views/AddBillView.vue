@@ -169,12 +169,35 @@ const handleSubmit = async () => {
     ElMessage.success(formData.id ? '修改成功' : '添加成功')
     visible.value = false
     emit('success')
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('保存失败:', error)
-    ElMessage.error(error?.response?.data?.msg || '保存失败，请稍后重试')
+    ElMessage.error(getErrorMessage(error, '保存失败，请稍后重试'))
   } finally {
     submitting.value = false
   }
+}
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'msg' in error.response.data &&
+    typeof error.response.data.msg === 'string'
+  ) {
+    return error.response.data.msg
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  return fallback
 }
 
 defineExpose({

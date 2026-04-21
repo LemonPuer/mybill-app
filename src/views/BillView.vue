@@ -32,6 +32,29 @@
             </div>
           </div>
         </div>
+
+        <div class="search-row">
+          <el-input
+            v-model="keyword"
+            placeholder="搜索备注或分类"
+            clearable
+            @keyup.enter="resetAndFetch"
+            @clear="resetAndFetch"
+          />
+          <el-select
+            v-model="currentCategoryId"
+            clearable
+            placeholder="全部分类"
+            @change="handleCategoryFilter"
+          >
+            <el-option
+              v-for="item in categoryOptions"
+              :key="String(item.value)"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </div>
       </div>
     </div>
 
@@ -49,7 +72,7 @@
       <el-icon :size="48" class="empty-icon">
         <FolderOpened />
       </el-icon>
-      <p class="empty-text">暂无数据</p>
+      <p class="empty-text">{{ keyword || currentCategoryId ? '没有符合条件的账单' : '暂无数据' }}</p>
     </div>
 
     <div v-else class="bill-groups">
@@ -77,15 +100,20 @@
               <button
                 class="action-btn delete"
                 title="删除"
-                :disabled="deletingIds.has(item.id)"
+                :disabled="deletingIds.has(item.id ?? -1)"
                 @click="handleDelete(item)"
               >
-                <el-icon v-if="!deletingIds.has(item.id)"><Delete /></el-icon>
+                <el-icon v-if="!deletingIds.has(item.id ?? -1)"><Delete /></el-icon>
                 <el-icon v-else class="is-loading"><Loading /></el-icon>
               </button>
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="load-more-wrapper">
+        <el-button v-if="hasMore" :loading="loadingMore" @click="loadMore">加载更多</el-button>
+        <span v-else class="load-more-end">没有更多账单了</span>
       </div>
     </div>
 
@@ -105,24 +133,29 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { FolderOpened, Edit, Delete, Loading } from '@element-plus/icons-vue'
 import * as billApi from '@/services/bill'
+import type FinanceTransactions from '@/models/FinanceTransactions'
 import {
   getMonthRangeTimestamps,
   getDayRangeTimestamps,
   formatFriendlyTime,
 } from '@/utils/commonUtil'
 import AddBillView from '@/views/AddBillView.vue'
+import { useCategoryStore } from '@/stores/useCategoryStore'
 
 const loading = ref(false)
 const loadingMore = ref(false)
 const isEditing = ref(false) // 是否在编辑模式
 const deletingIds = ref<Set<number>>(new Set()) // 正在删除的账单ID集合
-const billList = ref<any[]>([])
+const billList = ref<FinanceTransactions[]>([])
 const currentTypeFilter = ref('all')
 const currentTimeFilter = ref('all')
+const currentCategoryId = ref<number | null>(null)
+const keyword = ref('')
 const pageNum = ref(1)
 const pageSize = ref(20)
 const hasMore = ref(true)
 const addBillRef = ref<InstanceType<typeof AddBillView>>()
+const categoryStore = useCategoryStore()
 
 const typeFilters = [
   { label: '全部', value: 'all' },
@@ -136,6 +169,37 @@ const timeFilters = [
   { label: '本月', value: 'month' },
   { label: '上月', value: 'lastMonth' },
 ]
+
+const categoryOptions = computed(() => [
+  { label: '全部分类', value: null as number | null },
+  ...categoryStore.categoryList.map((item) => ({
+    label: item.category,
+    value: item.id ?? null,
+  })),
+])
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'msg' in error.response.data &&
+    typeof error.response.data.msg === 'string'
+  ) {
+    return error.response.data.msg
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  return fallback
+}
 
 const getDateParams = () => {
   const { monthStart, monthEnd } = getMonthRangeTimestamps() as {
@@ -162,7 +226,7 @@ const getDateParams = () => {
 }
 
 const groupedBills = computed(() => {
-  const groups: Record<string, any[]> = {}
+  const groups: Record<string, FinanceTransactions[]> = {}
   billList.value.forEach((item) => {
     let dateStr = item.transactionDate
     // 如果是时间戳格式，转换为日期字符串
@@ -189,7 +253,15 @@ const fetchBills = async (reset = false) => {
 
   loading.value = true
   try {
-    const params: any = {
+    const params: {
+      pageNum: number
+      pageSize: number
+      type?: number
+      categoryId?: number
+      keyword?: string
+      startTime?: string
+      endTime?: string
+    } = {
       pageNum: pageNum.value,
       pageSize: pageSize.value,
     }
@@ -200,14 +272,22 @@ const fetchBills = async (reset = false) => {
       params.type = 1
     }
 
+    if (currentCategoryId.value) {
+      params.categoryId = currentCategoryId.value
+    }
+
+    if (keyword.value.trim()) {
+      params.keyword = keyword.value.trim()
+    }
+
     const dateParams = getDateParams()
     Object.assign(params, dateParams)
 
     const res = await billApi.getFinanceTransactionsList(params)
-    const newList = res.data.data.result || []
+    const newList = (res.data.data.result || []) as FinanceTransactions[]
 
     // 格式化时间戳
-    newList.forEach((item: any) => {
+    newList.forEach((item) => {
       item.transactionDate = formatFriendlyTime(item.transactionDate)
     })
 
@@ -225,11 +305,21 @@ const fetchBills = async (reset = false) => {
 
 const handleTypeFilter = (value: string) => {
   currentTypeFilter.value = value
-  fetchBills(true)
+  resetAndFetch()
 }
 
 const handleTimeFilter = (value: string) => {
   currentTimeFilter.value = value
+  resetAndFetch()
+}
+
+const handleCategoryFilter = (value: number | null) => {
+  currentCategoryId.value = value
+  resetAndFetch()
+}
+
+const resetAndFetch = () => {
+  hasMore.value = true
   fetchBills(true)
 }
 
@@ -248,7 +338,7 @@ const handleAdd = () => {
   addBillRef.value?.open()
 }
 
-const handleEdit = (item: any) => {
+const handleEdit = (item: FinanceTransactions) => {
   isEditing.value = true
   addBillRef.value?.open({
     id: item.id,
@@ -260,7 +350,9 @@ const handleEdit = (item: any) => {
   })
 }
 
-const handleDelete = async (item: any) => {
+const handleDelete = async (item: FinanceTransactions) => {
+  if (!item.id) return
+
   // 防止重复删除
   if (deletingIds.value.has(item.id)) return
 
@@ -277,11 +369,14 @@ const handleDelete = async (item: any) => {
     await billApi.deleteFinanceTransactions(item.id)
     ElMessage.success('删除成功')
     fetchBills(true)
-  } catch (error: any) {
-    if (error !== 'cancel') {
-      console.error('删除失败:', error)
-      ElMessage.error(error?.response?.data?.msg || '删除失败，请稍后重试')
+  } catch (error: unknown) {
+    if (error === 'cancel' || error === 'close') {
+      return
     }
+
+    const message = getErrorMessage(error, '删除失败，请稍后重试')
+    console.error('删除失败:', error)
+    ElMessage.error(message)
   } finally {
     deletingIds.value.delete(item.id)
   }
@@ -292,6 +387,7 @@ const refreshBills = () => {
 }
 
 onMounted(() => {
+  categoryStore.fetchCategories()
   fetchBills(true)
 })
 </script>
@@ -317,6 +413,12 @@ onMounted(() => {
 .filter-label { font-size: 13px; color: var(--color-text-muted); white-space: nowrap; }
 
 .filter-options { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px;
+  gap: 10px;
+}
 
 .filter-item {
   padding: 4px 12px;
@@ -456,9 +558,20 @@ onMounted(() => {
 
 .loading-state { padding: 20px; }
 
-.pagination-bar {
+.load-more-wrapper {
   display: flex;
   justify-content: center;
   padding: 16px 0;
+}
+
+.load-more-end {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 640px) {
+  .search-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

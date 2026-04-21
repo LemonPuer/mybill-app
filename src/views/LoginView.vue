@@ -165,6 +165,29 @@ const countdown = ref(0)
 const activeTab = ref('login')
 const userInfoStore = useUserInfoStore()
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'msg' in error.response.data &&
+    typeof error.response.data.msg === 'string'
+  ) {
+    return error.response.data.msg
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  return fallback
+}
+
 onBeforeMount(() => {
   const token = userInfoStore.accessToken
   if (token) {
@@ -265,9 +288,9 @@ const handleLogin = async () => {
       ElMessage.success('登录成功')
       router.push('/')
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('登录失败:', error)
-    ElMessage.error(error?.response?.data?.msg || error?.message || '登录失败，请检查用户名和密码')
+    ElMessage.error(getErrorMessage(error, '登录失败，请检查用户名和密码'))
   } finally {
     loading.value = false
   }
@@ -292,9 +315,9 @@ const handleRegister = async () => {
         throw new Error(response.data.msg || '注册失败')
       }
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('注册失败:', error)
-    ElMessage.error(error?.response?.data?.msg || error?.message || '注册失败，请稍后重试')
+    ElMessage.error(getErrorMessage(error, '注册失败，请稍后重试'))
   } finally {
     loading.value = false
   }
@@ -341,9 +364,9 @@ const handleResetPassword = async () => {
       try {
         ElMessage.success('密码重置成功，请登录')
         activeTab.value = 'login'
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('密码重置失败:', error)
-        ElMessage.error(error?.response?.data?.msg || '重置失败，请稍后重试')
+        ElMessage.error(getErrorMessage(error, '重置失败，请稍后重试'))
       } finally {
         loading.value = false
       }

@@ -45,16 +45,16 @@
         </div>
         <div class="budget-progress">
           <div class="progress-text">
-            <span>已使用: {{ parseFloat(item.cost) || 0 }}元</span>
-            <span>预算: {{ parseFloat(item.amount) }}元</span>
+            <span>已使用: {{ parseFloat(String(item.cost)) || 0 }}元</span>
+            <span>预算: {{ parseFloat(String(item.amount)) }}元</span>
           </div>
           <el-progress
-            :percentage="getPercentage(parseFloat(item.cost) || 0, parseFloat(item.amount))"
+            :percentage="getPercentage(parseFloat(String(item.cost)) || 0, parseFloat(String(item.amount)))"
             :stroke-width="8"
-            :color="getProgressColor(parseFloat(item.cost) || 0, parseFloat(item.amount))"
+            :color="getProgressColor(parseFloat(String(item.cost)) || 0, parseFloat(String(item.amount)))"
           />
         </div>
-        <div class="budget-amount">{{ parseFloat(item.amount) }}元</div>
+        <div class="budget-amount">{{ parseFloat(String(item.amount)) }}元</div>
         <div class="budget-actions">
           <el-button :icon="Edit" circle size="small" @click="handleEdit(item)" />
           <el-button :icon="Delete" circle size="small" type="danger" @click="handleDelete(item)" />
@@ -123,7 +123,18 @@ const showDialog = ref(false)
 const isEdit = ref(false)
 const editingId = ref(0)
 const currentFilter = ref('month')
-const budgetList = ref<any[]>([])
+interface BudgetItem {
+  id: number
+  categoryId: number
+  category?: string
+  icon?: string
+  amount: string | number
+  cost: string | number
+  startTime: string | number
+  endTime: string | number
+}
+
+const budgetList = ref<BudgetItem[]>([])
 const dateRange = ref<[number, number] | null>(null)
 
 const formData = ref({
@@ -138,6 +149,29 @@ const timeFilters = [
   { label: '本年', value: 'year' },
   { label: '全部', value: 'all' },
 ]
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'msg' in error.response.data &&
+    typeof error.response.data.msg === 'string'
+  ) {
+    return error.response.data.msg
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  return fallback
+}
 
 const getDateParams = () => {
   const { monthStart, monthEnd } = getMonthRangeTimestamps()
@@ -158,7 +192,7 @@ const fetchBudgets = async () => {
   try {
     const params = getDateParams()
     const res = await billApi.getBudgetInfo(params)
-    budgetList.value = res.data.data || []
+    budgetList.value = (res.data.data || []) as BudgetItem[]
   } finally {
     loading.value = false
   }
@@ -176,14 +210,14 @@ const handleAdd = () => {
   showDialog.value = true
 }
 
-const handleEdit = (item: any) => {
+const handleEdit = (item: BudgetItem) => {
   isEdit.value = true
   editingId.value = item.id
   formData.value = {
-    categoryId: item.categoryId,
-    amount: item.amount,
-    startTime: item.startTime,
-    endTime: item.endTime,
+    categoryId: String(item.categoryId),
+    amount: Number(item.amount),
+    startTime: String(item.startTime),
+    endTime: String(item.endTime),
   }
   dateRange.value = [Number(item.startTime), Number(item.endTime)]
   showDialog.value = true
@@ -236,7 +270,7 @@ const handleSubmit = async () => {
   }
 }
 
-const handleDelete = async (item: any) => {
+const handleDelete = async (item: BudgetItem) => {
   try {
     await ElMessageBox.confirm('确定要删除该预算吗？', '提示', {
       confirmButtonText: '确定',
@@ -246,8 +280,12 @@ const handleDelete = async (item: any) => {
     await billApi.deleteBudget(item.id)
     ElMessage.success('删除成功')
     fetchBudgets()
-  } catch {
-    // 用户取消
+  } catch (error: unknown) {
+    if (error === 'cancel' || error === 'close') {
+      return
+    }
+
+    ElMessage.error(getErrorMessage(error, '删除失败，请稍后重试'))
   }
 }
 

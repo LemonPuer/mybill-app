@@ -29,7 +29,7 @@ export const getCashFlowCard = (data: { startTime: string; endTime: string }) =>
 export const getFinanceTransactionsList = (data: {
   type?: number
   categoryId?: number
-  accountId?: number
+  keyword?: string
   startTime?: string
   endTime?: string
   pageNum: number
@@ -236,7 +236,7 @@ export const deleteFinanceTransactions = (id: number) => {
  * @returns
  */
 export const deleteCategory = (id: number) => {
-  return api.post('/app/deleteCategory', {
+  return api.post('/app/delCategory', {
     data: { id },
   })
 }

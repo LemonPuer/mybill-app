@@ -1,49 +1,22 @@
 <template>
   <div>
-    <!-- 顶部数据概览（Task 3: 统计概览行 3 列） -->
-    <div class="stats-overview">
-      <!-- 收入卡片 -->
-      <div class="stat-card income-card">
-        <div class="stat-icon income-icon">
-          <el-icon><ArrowDownBold /></el-icon>
-        </div>
-        <div class="stat-info">
-          <div class="stat-label">本月收入</div>
-          <div class="stat-value">
-            {{ overviewData.income.amount ? overviewData.income.amount : '-' }} 元
-          </div>
-          <div class="stat-sub">本月</div>
-        </div>
+    <div class="dashboard-range-switch">
+      <div class="range-chip" :class="{ active: rangeMode === 'month' }" @click="rangeMode = 'month'">
+        本月
       </div>
-
-      <!-- 支出卡片 -->
-      <div class="stat-card expense-card">
-        <div class="stat-icon expense-icon">
-          <el-icon><ArrowUpBold /></el-icon>
-        </div>
-        <div class="stat-info">
-          <div class="stat-label">本月支出</div>
-          <div class="stat-value">
-            {{ overviewData.expend.amount ? overviewData.expend.amount : '-' }} 元
-          </div>
-          <div class="stat-sub">本月</div>
-        </div>
+      <div
+        class="range-chip"
+        :class="{ active: rangeMode === 'quarter' }"
+        @click="rangeMode = 'quarter'"
+      >
+        近 3 月
       </div>
-
-      <!-- 结余卡片 -->
-      <div class="stat-card balance-card">
-        <div class="stat-icon balance-icon">
-          <el-icon><Wallet /></el-icon>
-        </div>
-        <div class="stat-info">
-          <div class="stat-label">本月结余</div>
-          <div class="stat-value">
-            {{ overviewData.balance.amount ? overviewData.balance.amount : '-' }} 元
-          </div>
-          <div class="stat-sub">本月</div>
-        </div>
+      <div class="range-chip" :class="{ active: rangeMode === 'year' }" @click="rangeMode = 'year'">
+        本年
       </div>
     </div>
+
+    <DashboardOverviewCards :data="overviewData" />
 
     <!-- 主网格布局（Task 3: 新 Grid 布局顺序） -->
     <div class="dashboard-grid">
@@ -109,8 +82,8 @@
           <strong class="card-header-title">消费分类占比</strong>
           <span
             class="card-header-pill"
-            @click="skipBill('/statistics')"
-          >查看详情</span>
+            @click="skipBill('/bills')"
+          >查看账单</span>
         </template>
         <div class="consumption-pie-chart" v-if="chartOption.series[0].data.length === 0">
           <div class="common-empty-state">
@@ -134,49 +107,12 @@
             @click="skipBill('/bills')"
           >查看全部</span>
         </template>
-        <div class="recentlyBill-empty-state" v-if="recentlyBillList.length === 0">
-          <div class="common-empty-state">
-            <strong>当月暂无账单</strong>
-          </div>
-        </div>
-        <div class="recently-bill-list" v-else>
-          <div
-            v-for="(item, index) in recentlyBillList"
-            :key="item.id"
-            class="recently-bill-item"
-            :class="{ 'no-border': index === recentlyBillList.length - 1 }"
-          >
-            <div class="recently-bill-item-left">
-              <div class="bill-icon" :class="{ 'is-income': item.type === 1 }">
-                <el-icon>
-                  <component :is="item.icon || 'Wallet'" />
-                </el-icon>
-              </div>
-              <div class="bill-info">
-                <div class="bill-category">{{ item.category || '未分类' }}</div>
-                <div class="bill-note" v-if="item.note">{{ item.note }}</div>
-                <div class="bill-date">{{ item.displayDate }}</div>
-              </div>
-            </div>
-            <div class="recently-bill-item-right">
-              <span class="bill-amount" :class="{ 'is-income': item.type === 1 }">
-                {{ item.type === 1 ? '+' : '-' }}{{ item.amount }}
-              </span>
-              <div class="bill-actions">
-                <el-button :icon="Edit" circle size="small" text @click="handleEdit(item)" />
-                <el-button
-                  :icon="deletingIds.has(item.id) ? Loading : Delete"
-                  circle
-                  size="small"
-                  text
-                  type="danger"
-                  :disabled="deletingIds.has(item.id)"
-                  @click="handleDelete(item)"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <DashboardRecentBills
+          :items="recentlyBillList"
+          :deleting-ids="deletingIds"
+          @edit="handleEdit"
+          @delete="handleDelete"
+        />
       </el-card>
 
       <!-- 消费趋势：全宽（Task 9: 面积图） -->
@@ -212,12 +148,14 @@
 <script setup lang="ts">
 import router from '@/router'
 import * as billApi from '@/services/bill'
-import { formatFriendlyTime, getMonthRangeTimestamps } from '@/utils/commonUtil'
-import { ArrowDownBold, ArrowUpBold, Delete, Edit, Loading, Wallet, WarningFilled } from '@element-plus/icons-vue'
+import { useThemeStore } from '@/stores/useThemeStore'
+import { WarningFilled } from '@element-plus/icons-vue'
 import { ElLoading, ElMessage } from 'element-plus'
-import { onMounted, onUnmounted, reactive, ref } from 'vue'
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import VChart from 'vue-echarts'
 import AddBillView from '@/views/AddBillView.vue'
+import DashboardOverviewCards from '@/views/dashboard/components/DashboardOverviewCards.vue'
+import DashboardRecentBills from '@/views/dashboard/components/DashboardRecentBills.vue'
 // 引入需要的图表类型
 import { BarChart, LineChart, PieChart } from 'echarts/charts'
 // 引入必要的组件（如 tooltip、legend 等）
@@ -232,6 +170,29 @@ import {
 import { CanvasRenderer } from 'echarts/renderers'
 import type FinanceTransactions from '@/models/FinanceTransactions'
 import { use } from 'echarts/core'
+import type {
+  DashboardOverviewData,
+  BudgetItem,
+  ConsumptionChartOption,
+  ConsumptionStatisticItem,
+  DashboardBillItem,
+  RangeMode,
+  RawBudgetItem,
+  TrendChartOption,
+} from '@/views/dashboard/types'
+import {
+  applyConsumptionChartData,
+  applyTrendChartData,
+  getBudgetPercent,
+  getBudgetPercentClass,
+  getRangeParams,
+  getTrendPageSize,
+  mapBudgetItem,
+  mapRecentlyBillList,
+  refreshGraphic,
+  resetConsumptionChartData,
+  resetTrendChartData,
+} from '@/views/dashboard/utils'
 
 use([
   TitleComponent,
@@ -245,128 +206,7 @@ use([
   CanvasRenderer,
 ])
 
-interface DashboardBillItem extends FinanceTransactions {
-  displayDate: string
-}
-
-interface ConsumptionStatisticItem {
-  category: string
-  consumption: number
-}
-
-interface ConsumerTrendItem {
-  month: string
-  totalIncome: number
-  totalExpense: number
-  totalBalance: number
-}
-
-interface ConsumptionChartOption {
-  color?: string[]
-  tooltip: {
-    trigger: string
-    formatter: string
-  }
-  legend: {
-    orient: string
-    right?: string
-    top?: string
-    bottom?: number
-    left?: string
-    type?: string
-    itemWidth?: number
-    itemHeight?: number
-    itemGap?: number
-    textStyle?: Record<string, unknown>
-    data: Array<string>
-  }
-  graphic: Array<Record<string, unknown>>
-  series: [
-    {
-      name: string
-      type: string
-      radius: string | string[]
-      center: Array<string>
-      avoidLabelOverlap: boolean
-      label: {
-        show: boolean
-      }
-      labelLine: {
-        show: boolean
-      }
-      data: Array<{
-        value: number
-        name: string
-      }>
-      emphasis: {
-        itemStyle: {
-          shadowBlur: number
-          shadowOffsetX: number
-          shadowColor: string
-        }
-      }
-    },
-  ]
-}
-
-interface TrendSeriesItem {
-  name: string
-  type: string
-  smooth: boolean
-  areaStyle: {
-    color: {
-      type: string
-      x: number
-      y: number
-      x2: number
-      y2: number
-      colorStops: Array<{ offset: number; color: string }>
-    }
-    opacity: number
-  }
-  data: Array<number>
-}
-
-interface TrendChartOption {
-  color?: string[]
-  tooltip: {
-    trigger: string
-  }
-  legend: {
-    top: number
-    data: Array<string>
-  }
-  grid: {
-    left: string
-    right: string
-    bottom: string
-    containLabel: boolean
-  }
-  xAxis: {
-    type: string
-    data: Array<string>
-  }
-  yAxis: {
-    type: string
-  }
-  series: Array<TrendSeriesItem>
-}
-
-interface RawBudgetItem {
-  id?: number
-  category?: string
-  categoryName?: string
-  icon?: string
-  amount?: number | string
-  cost?: number | string
-  spent?: number | string
-}
-
-const overviewData: {
-  income: { amount: number; type: number; ratio: string; ratioType: number }
-  expend: { amount: number; type: number; ratio: string; ratioType: number }
-  balance: { amount: number; type: number; ratio: string; ratioType: number }
-} = reactive({
+const overviewData: DashboardOverviewData = reactive({
   income: { amount: 0, type: 0, ratio: '0%', ratioType: 0 },
   expend: { amount: 0, type: 0, ratio: '0%', ratioType: 0 },
   balance: { amount: 0, type: 0, ratio: '0%', ratioType: 0 },
@@ -507,110 +347,15 @@ const trendChartOption = ref<TrendChartOption>({
   ],
 })
 
-// 预算列表
-interface BudgetItem {
-  id?: number
-  categoryName: string
-  icon?: string
-  amount: number
-  spent: number
-}
 const budgetList = ref<Array<BudgetItem>>([])
+const themeStore = useThemeStore()
+const rangeMode = ref<RangeMode>('month')
 
 const addBillRef = ref()
 const deletingIds = ref<Set<number | undefined>>(new Set())
 
-// ─── 数据处理函数（不可改动）───
-const mapRecentlyBillList = (items: Array<FinanceTransactions>) => {
-  return items.map((item) => ({
-    ...item,
-    displayDate: formatFriendlyTime(item.transactionDate),
-  }))
-}
-
 // ECharts graphic 使用 canvas 渲染，不支持 CSS 变量；每次调用时实时读取计算值
 const graphicTotal = ref(0)
-
-const buildGraphic = (total: number): Array<Record<string, unknown>> => {
-  const rootStyle = getComputedStyle(document.documentElement)
-  const primaryColor = rootStyle.getPropertyValue('--color-text-primary').trim() || '#ffffff'
-  const mutedColor = rootStyle.getPropertyValue('--color-text-muted').trim() || '#9ca3af'
-  return [
-    {
-      type: 'text',
-      left: '38%',
-      top: '42%',
-      style: { text: `${total}`, textAlign: 'center', fill: primaryColor, fontSize: 18, fontWeight: 'bold' },
-    },
-    {
-      type: 'text',
-      left: '38%',
-      top: '53%',
-      style: { text: '总支出', textAlign: 'center', fill: mutedColor, fontSize: 11 },
-    },
-  ]
-}
-
-const applyConsumptionChartData = (items: Array<ConsumptionStatisticItem>) => {
-  chartOption.value.legend.data = items.map((item) => item.category || '未分类')
-  chartOption.value.series[0].data = items.map((item) => ({
-    value: item.consumption,
-    name: item.category || '未分类',
-  }))
-  graphicTotal.value = items.reduce((sum, item) => sum + (item.consumption || 0), 0)
-  chartOption.value.graphic = buildGraphic(graphicTotal.value)
-}
-
-const resetConsumptionChartData = () => {
-  chartOption.value.legend.data = []
-  chartOption.value.series[0].data = []
-  chartOption.value.graphic = []
-}
-
-const applyTrendChartData = (items: Array<ConsumerTrendItem>) => {
-  const sortedItems = [...items].sort((a, b) => a.month.localeCompare(b.month))
-  trendChartOption.value.xAxis.data = sortedItems.map((item) => item.month)
-  trendChartOption.value.series[0].data = sortedItems.map((item) => item.totalIncome)
-  trendChartOption.value.series[1].data = sortedItems.map((item) => item.totalExpense)
-  trendChartOption.value.series[2].data = sortedItems.map((item) => item.totalBalance)
-}
-
-const resetTrendChartData = () => {
-  trendChartOption.value.xAxis.data = []
-  trendChartOption.value.series[0].data = []
-  trendChartOption.value.series[1].data = []
-  trendChartOption.value.series[2].data = []
-}
-
-const getBudgetPercent = (spent: number, amount: number) =>
-  amount > 0 ? Math.min(Math.round((spent / amount) * 100), 999) : 0
-
-const getBudgetPercentClass = (spent: number, amount: number) => {
-  const p = amount > 0 ? (spent / amount) * 100 : 0
-  if (p >= 100) return 'percent-danger'
-  if (p >= 70) return 'percent-warn'
-  return 'percent-normal'
-}
-
-const mapBudgetItem = (item: RawBudgetItem): BudgetItem => ({
-  id: item.id,
-  categoryName: item.categoryName || item.category || '未分类',
-  icon: item.icon,
-  amount: Number(item.amount || 0),
-  spent: Number(item.spent || item.cost || 0),
-})
-
-const getRecentMonthRange = (monthCount: number) => {
-  const endDate = new Date()
-  const startDate = new Date(endDate)
-  startDate.setMonth(startDate.getMonth() - (monthCount - 1), 1)
-  startDate.setHours(0, 0, 0, 0)
-  return {
-    startTime: startDate.getTime().toString(),
-    endTime: endDate.getTime().toString(),
-  }
-}
-
 // ─── 业务逻辑（不可改动）───
 const handleEdit = (item: FinanceTransactions) => {
   addBillRef.value.open({
@@ -642,14 +387,11 @@ const handleDelete = (item: FinanceTransactions) => {
 }
 
 const refreshRecentlyBill = () => {
-  const { monthStart, monthEnd } = getMonthRangeTimestamps() as {
-    monthStart: string
-    monthEnd: string
-  }
+  const { startTime, endTime } = getRangeParams(rangeMode.value)
   billApi
     .getFinanceTransactionsList({
-      startTime: monthStart,
-      endTime: monthEnd,
+      startTime,
+      endTime,
       pageNum: 1,
       pageSize: 3,
     })
@@ -658,107 +400,139 @@ const refreshRecentlyBill = () => {
     })
 }
 
-const skipBill = (to: string) => {
-  router.push(to)
+const fetchOverviewData = () => {
+  const { startTime, endTime } = getRangeParams(rangeMode.value)
+
+  return billApi.getCashFlowCard({ startTime, endTime }).then((res) => {
+    overviewData.income.amount = 0
+    overviewData.expend.amount = 0
+    overviewData.balance.amount = 0
+
+    const dataList = res.data.data as Array<{
+      amount: number
+      type: number
+      ratio: string
+      ratioType: number
+    }>
+
+    dataList.forEach((item) => {
+      if (item.type === 1) {
+        overviewData.income.amount = item.amount
+        overviewData.income.ratio = item.ratio || '0%'
+        overviewData.income.ratioType = item.ratioType
+      } else if (item.type === 2) {
+        overviewData.expend.amount = item.amount
+        overviewData.expend.ratio = item.ratio || '0%'
+        overviewData.expend.ratioType = item.ratioType
+      } else if (item.type === 3) {
+        overviewData.balance.amount = item.amount
+        overviewData.balance.ratio = item.ratio || '0%'
+        overviewData.balance.ratioType = item.ratioType
+      }
+    })
+  })
 }
 
-onMounted(() => {
+const fetchBudgetList = () => {
+  const { startTime, endTime } = getRangeParams(rangeMode.value)
+
+  return billApi
+    .getBudgetInfo({ startTime, endTime, pageNum: 1, pageSize: 3 })
+    .then((res) => {
+      budgetList.value = ((res.data.data as Array<RawBudgetItem>) || []).map(mapBudgetItem)
+    })
+    .catch((error) => {
+      console.error('获取预算失败:', error)
+      budgetList.value = []
+    })
+}
+
+const fetchConsumptionStatistics = () => {
+  const { startTime, endTime } = getRangeParams(rangeMode.value)
+
+  return billApi
+    .consumptionStatistics({ startTime, endTime })
+    .then((res) => {
+      graphicTotal.value = applyConsumptionChartData(
+        chartOption.value,
+        (res.data.data as Array<ConsumptionStatisticItem>) || [],
+      )
+    })
+    .catch((error) => {
+      console.error('获取消费分类占比失败:', error)
+      resetConsumptionChartData(chartOption.value)
+    })
+}
+
+const fetchConsumerTrends = () => {
+  const { startTime, endTime } = getRangeParams(rangeMode.value)
+
+  return billApi
+    .consumerTrends({
+      startTime,
+      endTime,
+      pageNum: 1,
+      pageSize: getTrendPageSize(rangeMode.value),
+    })
+    .then((res) => {
+      applyTrendChartData(trendChartOption.value, res.data.data.result || [])
+    })
+    .catch((error) => {
+      console.error('获取消费趋势失败:', error)
+      resetTrendChartData(trendChartOption.value)
+    })
+}
+
+const loadDashboardData = () => {
   const loadingInstance = ElLoading.service({
     fullscreen: true,
     text: '加载中...',
     background: 'rgba(0, 0, 0, 0.5)',
   })
-  const { monthStart, monthEnd } = getMonthRangeTimestamps() as {
-    monthStart: string
-    monthEnd: string
-  }
-  const { startTime: trendStart, endTime: trendEnd } = getRecentMonthRange(6)
 
   Promise.allSettled([
-    billApi.getCashFlowCard({ startTime: monthStart, endTime: monthEnd }).then((res) => {
-      const dataList = res.data.data as Array<{
-        amount: number
-        type: number
-        ratio: string
-        ratioType: number
-      }>
-      dataList.forEach((item) => {
-        if (item.type === 1) {
-          overviewData.income.amount = item.amount
-          overviewData.income.ratio = item.ratio || '0%'
-          overviewData.income.ratioType = item.ratioType
-        } else if (item.type === 2) {
-          overviewData.expend.amount = item.amount
-          overviewData.expend.ratio = item.ratio || '0%'
-          overviewData.expend.ratioType = item.ratioType
-        } else if (item.type === 3) {
-          overviewData.balance.amount = item.amount
-          overviewData.balance.ratio = item.ratio || '0%'
-          overviewData.balance.ratioType = item.ratioType
-        }
-      })
-    }),
-    billApi
-      .getFinanceTransactionsList({
-        startTime: monthStart,
-        endTime: monthEnd,
-        pageNum: 1,
-        pageSize: 3,
-      })
-      .then((res) => {
-        recentlyBillList.value = mapRecentlyBillList(res.data.data.result || [])
-      })
-      .catch((error) => {
-        console.error('获取近期账单失败:', error)
-        recentlyBillList.value = []
-      }),
-    billApi
-      .getBudgetInfo({ startTime: monthStart, endTime: monthEnd, pageNum: 1, pageSize: 3 })
-      .then((res) => {
-        budgetList.value = ((res.data.data as Array<RawBudgetItem>) || []).map(mapBudgetItem)
-      })
-      .catch((error) => {
-        console.error('获取预算失败:', error)
-        budgetList.value = []
-      }),
-    billApi
-      .consumptionStatistics({ startTime: monthStart, endTime: monthEnd })
-      .then((res) => {
-        applyConsumptionChartData((res.data.data as Array<ConsumptionStatisticItem>) || [])
-      })
-      .catch((error) => {
-        console.error('获取消费分类占比失败:', error)
-        resetConsumptionChartData()
-      }),
-    billApi
-      .consumerTrends({
-        startTime: trendStart,
-        endTime: trendEnd,
-        pageNum: 1,
-        pageSize: 6,
-      })
-      .then((res) => {
-        applyTrendChartData(res.data.data.result || [])
-      })
-      .catch((error) => {
-        console.error('获取消费趋势失败:', error)
-        resetTrendChartData()
-      }),
+    fetchOverviewData(),
+    refreshRecentlyBill(),
+    fetchBudgetList(),
+    fetchConsumptionStatistics(),
+    fetchConsumerTrends(),
   ]).finally(() => {
     loadingInstance.close()
   })
+}
 
-  // 监听主题切换，实时刷新 graphic 颜色（canvas 不支持 CSS 变量）
-  themeObserver = new MutationObserver(() => {
-    if (chartOption.value.graphic.length > 0) {
-      chartOption.value.graphic = buildGraphic(graphicTotal.value)
-    }
-  })
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+const skipBill = (to: string) => {
+  router.push(to)
+}
+
+onMounted(() => {
+  loadDashboardData()
+
+  systemThemeMedia = window.matchMedia('(prefers-color-scheme: dark)')
+  systemThemeMedia.addEventListener('change', handleSystemThemeChange)
 })
 
-let themeObserver: MutationObserver | null = null
-onUnmounted(() => themeObserver?.disconnect())
+const handleSystemThemeChange = () => {
+  if (themeStore.themeMode === 'system') {
+    refreshGraphic(chartOption.value, graphicTotal.value)
+  }
+}
+
+watch(
+  () => themeStore.effectiveTheme,
+  () => {
+    refreshGraphic(chartOption.value, graphicTotal.value)
+  },
+)
+
+watch(rangeMode, () => {
+  loadDashboardData()
+})
+
+let systemThemeMedia: MediaQueryList | null = null
+onUnmounted(() => {
+  systemThemeMedia?.removeEventListener('change', handleSystemThemeChange)
+})
 </script>
 
 <!-- 全局样式：el-card header -->
@@ -772,6 +546,34 @@ onUnmounted(() => themeObserver?.disconnect())
 </style>
 
 <style scoped>
+/* ===================================================
+   时间维度切换
+   =================================================== */
+.dashboard-range-switch {
+  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 6px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  box-shadow: var(--shadow-card);
+}
+
+.range-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--motion-fast);
+}
+
+.range-chip.active {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
 /* ===================================================
    仪表盘网格（Task 3）
    =================================================== */
@@ -851,226 +653,9 @@ onUnmounted(() => themeObserver?.disconnect())
   flex: 1;
 }
 
-.recentlyBill-empty-state {
-  display: flex;
-  height: 250px;
-}
-
 .budget-list-empty-state {
   display: flex;
   height: 200px;
-}
-
-/* ===================================================
-   统计概览（Task 2/4）
-   =================================================== */
-.stats-overview {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  background: var(--glass-bg-raised);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: var(--radius-card);
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 90px;
-  box-shadow:
-    0 4px 24px rgba(124, 58, 237, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-  transition: transform var(--motion-base), box-shadow var(--motion-base);
-}
-
-.stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-accent);
-}
-
-/* 左侧彩色竖条 4px（Task 4） */
-.stat-card.income-card  { border-left: 4px solid var(--color-income); }
-.stat-card.expense-card { border-left: 4px solid var(--color-expense); }
-.stat-card.balance-card { border-left: 4px solid var(--color-accent); }
-
-/* 图标区 48×48px 圆角 14px（Task 4） */
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 22px;
-}
-
-.income-icon {
-  background: linear-gradient(135deg, rgba(5, 150, 105, 0.2), rgba(6, 214, 160, 0.1));
-  color: var(--color-income);
-}
-
-.expense-icon {
-  background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(248, 113, 113, 0.1));
-  color: var(--color-expense);
-}
-
-.balance-icon {
-  background: linear-gradient(135deg, var(--color-accent-subtle), rgba(124, 58, 237, 0.05));
-  color: var(--color-accent);
-}
-
-.stat-info { flex: 1; min-width: 0; }
-
-.stat-label {
-  font-size: 12px;
-  color: var(--color-text-muted);
-  margin-bottom: 4px;
-}
-
-/* 数字 24px 800（Task 4） */
-.stat-value {
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.2;
-}
-
-/* 「本月」固定标签（Task 4） */
-.stat-sub {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  margin-top: 3px;
-}
-
-/* ===================================================
-   近期账单（Task 7）
-   =================================================== */
-.recently-bill-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.recently-bill-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 8px;
-  border-radius: 0;
-  border-bottom: 1px solid var(--glass-border);
-  transition: background var(--motion-fast);
-}
-
-/* 最后一行不显示分隔线（Task 7） */
-.recently-bill-item.no-border {
-  border-bottom: none;
-}
-
-.recently-bill-item:hover {
-  background: var(--color-accent-subtle);
-}
-
-.recently-bill-item-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-  min-width: 0;
-}
-
-.bill-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(220, 38, 38, 0.1);
-  color: var(--color-expense);
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-.bill-icon.is-income {
-  background: rgba(6, 214, 160, 0.1);
-  color: var(--color-income);
-}
-
-.bill-info { display: flex; flex-direction: column; min-width: 0; }
-
-.bill-category {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.bill-note {
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.bill-date {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  margin-top: 2px;
-}
-
-.recently-bill-item-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-shrink: 0;
-}
-
-/* 金额列（Task 7） */
-.bill-amount {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--color-expense);
-  font-variant-numeric: tabular-nums;
-  min-width: 80px;
-  text-align: right;
-}
-
-.bill-amount.is-income { color: var(--color-income); }
-
-/* 操作按钮：默认隐藏，hover 时显示（Task 7） */
-.bill-actions { display: flex; gap: 8px; }
-
-.bill-actions .el-button {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-tag);
-  background: var(--color-accent-subtle);
-  border: none;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 150ms ease-out, background var(--motion-fast);
-}
-
-.recently-bill-item:hover .bill-actions .el-button {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.bill-actions .el-button:hover {
-  background: var(--color-accent);
-  color: #fff;
 }
 
 /* ===================================================
@@ -1269,8 +854,6 @@ onUnmounted(() => themeObserver?.disconnect())
 
 /* 768px – 1024px：2 列网格，数字 20px，饼图 180px，趋势 220px */
 @media (max-width: 1024px) and (min-width: 769px) {
-  .stat-value { font-size: 20px; }
-
   .consumption-pie-chart { height: 220px; }
   .consumption-trend-chart { height: 220px; }
 
@@ -1286,22 +869,6 @@ onUnmounted(() => themeObserver?.disconnect())
   }
 
   .card-full-width { grid-column: span 1; }
-  .stat-card       { padding: 14px; }
-  .stat-value      { font-size: 18px; }
-
-  .recently-bill-item       { padding: 10px 4px; }
-  .recently-bill-item-left  { gap: 10px; }
-  .bill-icon                { width: 36px; height: 36px; font-size: 16px; }
-  .recently-bill-item-right { gap: 10px; }
-  .bill-amount              { font-size: 15px; min-width: 80px; }
-
-  /* 移动端按钮始终可见，28×28px（Task 7） */
-  .bill-actions .el-button {
-    width: 28px;
-    height: 28px;
-    opacity: 1;
-    pointer-events: auto;
-  }
 
   .consumption-pie-chart  { height: 200px; }
   .consumption-trend-chart { height: 180px; }
@@ -1317,13 +884,4 @@ onUnmounted(() => themeObserver?.disconnect())
 }
 
 /* ≤480px：单列竖排，数字 20px（Task 10） */
-@media (max-width: 480px) {
-  .stats-overview {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-
-  .stat-card  { padding: 14px 16px; }
-  .stat-value { font-size: 20px; }
-}
 </style>

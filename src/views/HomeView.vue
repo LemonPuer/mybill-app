@@ -32,7 +32,7 @@ const addBillRef = ref<InstanceType<typeof AddBillView>>()
  * @param fn - 要执行的函数
  * @param delay - 延迟时间（毫秒）
  */
-const debounce = <T extends (...args: any[]) => any>(
+const debounce = <T extends (...args: unknown[]) => unknown>(
   fn: T,
   delay: number = 1000,
 ): ((...args: Parameters<T>) => void) => {
@@ -74,10 +74,10 @@ const handleSubmit = debounce(async (): Promise<void> => {
 
     // 清空输入框
     inputText.value = ''
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('解析失败:', error)
     // 显示具体错误原因
-    const errorMsg = error?.response?.data?.msg || '解析失败，请手动添加'
+    const errorMsg = getErrorMessage(error, '解析失败，请手动添加')
     ElMessage.warning(errorMsg)
     // 打开空白表单让用户手动填写
     addBillRef.value?.open()
@@ -85,6 +85,29 @@ const handleSubmit = debounce(async (): Promise<void> => {
     loading.value = false
   }
 }, 1500) // 1.5秒内不能重复点击
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'msg' in error.response.data &&
+    typeof error.response.data.msg === 'string'
+  ) {
+    return error.response.data.msg
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  return fallback
+}
 </script>
 
 <style scoped>

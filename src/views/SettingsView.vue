@@ -55,6 +55,13 @@
         <div class="settings-desc">修改个人信息</div>
       </div>
 
+      <!-- 通知设置 -->
+      <div class="settings-card" @click="goToPage('/settings/notifications')">
+        <div class="settings-icon">✉️</div>
+        <div class="settings-title">通知设置</div>
+        <div class="settings-desc">配置邮箱与提醒偏好</div>
+      </div>
+
       <!-- 关于 -->
       <div class="settings-card" @click="showAbout">
         <div class="settings-icon">ℹ️</div>

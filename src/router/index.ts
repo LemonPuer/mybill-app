@@ -26,14 +26,19 @@ const router = createRouter({
           component: () => import('@/views/BillView.vue'),
         },
         {
-          path: '/statistics',
-          name: 'statistics',
-          component: () => import('@/views/StatisticsView.vue'),
-        },
-        {
           path: '/settings',
           name: 'settings',
           component: () => import('@/views/SettingsView.vue'),
+        },
+        {
+          path: '/settings/profile',
+          name: 'settings-profile',
+          component: () => import('@/views/settings/ProfileView.vue'),
+        },
+        {
+          path: '/settings/notifications',
+          name: 'settings-notifications',
+          component: () => import('@/views/settings/NotificationSettingsView.vue'),
         },
         {
           path: '/settings/categories',

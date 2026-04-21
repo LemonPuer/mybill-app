@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { EditPen, DataAnalysis, Wallet, PieChart, Setting } from '@element-plus/icons-vue'
+import { EditPen, DataAnalysis, Wallet, Setting } from '@element-plus/icons-vue'
 
 const route = useRoute()
 
@@ -25,7 +25,6 @@ const navItems = [
   { path: '/', label: '记账', icon: EditPen },
   { path: '/dashboard', label: '看板', icon: DataAnalysis },
   { path: '/bills', label: '账单', icon: Wallet },
-  { path: '/statistics', label: '统计', icon: PieChart },
   { path: '/settings', label: '设置', icon: Setting },
 ]
 

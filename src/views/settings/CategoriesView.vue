@@ -103,6 +103,29 @@ const iconOptions = Object.keys(ElIcons).map((key) => ({
 
 const categoryList = ref<Category[]>([])
 
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'data' in error.response &&
+    typeof error.response.data === 'object' &&
+    error.response.data !== null &&
+    'msg' in error.response.data &&
+    typeof error.response.data.msg === 'string'
+  ) {
+    return error.response.data.msg
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  return fallback
+}
+
 const fetchCategories = async () => {
   loading.value = true
   try {
@@ -163,12 +186,18 @@ const handleDelete = async (item: Category) => {
       cancelButtonText: '取消',
       type: 'warning',
     })
+  } catch {
+    return
+  }
+
+  try {
     await billApi.deleteCategory(item.id!)
     ElMessage.success('删除成功')
     fetchCategories()
     categoryStore.fetchCategories()
-  } catch {
-    // 用户取消
+  } catch (error: unknown) {
+    const message = getErrorMessage(error, '删除失败，请稍后重试')
+    ElMessage.error(message)
   }
 }
 

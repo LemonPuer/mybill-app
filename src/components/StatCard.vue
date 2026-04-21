@@ -13,12 +13,13 @@
 </template>
 
 <script setup lang="ts">
+import type { Component } from 'vue'
 import { computed } from 'vue'
 
 interface Props {
   label: string
   value: string | number
-  icon: any
+  icon: Component
   type?: 'default' | 'income' | 'expense' | 'balance'
 }
 
